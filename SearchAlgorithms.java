@@ -1,17 +1,21 @@
- import java.util.*;
+import java.util.*;
+import java.io.*;
 
 // implement algorithm using arraylist and linkedlist
 class Article implements Comparable<Article> {
+    private String id;
     private String title;
-    private String author;
+    private String abstractText;
 
-    public Article(String title, String author) {
+    public Article(String id, String title, String abstractText) {
+        this.id = id;
         this.title = title;
-        this.author = author;
+        this.abstractText = abstractText;
     }
 
+    public String getId() { return id; }
     public String getTitle() { return title; }
-    public String getAuthor() { return author; }
+    public String getAbstractText() { return abstractText; }
 
     @Override
     public int compareTo(Article other) {
@@ -19,13 +23,28 @@ class Article implements Comparable<Article> {
     }
 
     @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        Article article = (Article) obj;
+        return Objects.equals(title, article.title);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(title);
+    }
+
+    @Override
     public String toString() {
-        return "Article{" + "title='" + title + "', author='" + author + "'}";
+        return "Article{" + 
+               "id='" + id + "', " +
+               "title='" + title + "', " + 
+               "abstract='" + abstractText + "'}";
     }
 }
 
 public class SearchAlgorithms {
-
     //linear search (array)
     public static <T> int linearSearchArrayList(ArrayList<T> list, T key) {
         for (int i = 0; i < list.size(); i++) {
@@ -63,7 +82,7 @@ public class SearchAlgorithms {
         return binarySearchArrayList(tempList, key);
     }
 
-    //jumpp search (array)
+    //jump search (array)
     public static <T extends Comparable<T>> int jumpSearchArrayList(ArrayList<T> list, T key) {
         int n = list.size();
         int step = (int) Math.floor(Math.sqrt(n));
@@ -82,7 +101,7 @@ public class SearchAlgorithms {
         return -1;
     }
 
-    //jumpp search (linkedlist)
+    //jump search (linkedlist)
     public static <T extends Comparable<T>> int jumpSearchLinkedList(LinkedList<T> list, T key) {
         ArrayList<T> tempList = new ArrayList<>(list);
         return jumpSearchArrayList(tempList, key);
@@ -107,34 +126,108 @@ public class SearchAlgorithms {
         return exponentialSearchArrayList(tempList, key);
     }
 
+    // Method to read CSV file and return list of articles
+    public static List<Article> readCSV(String filename) {
+        List<Article> articles = new ArrayList<>();
+        
+        try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
+            String line;
+            boolean isFirstLine = true;
+            
+            while ((line = br.readLine()) != null) {
+                // Skip header line
+                if (isFirstLine) {
+                    isFirstLine = false;
+                    continue;
+                }
+                
+                // Split by comma, handling quotes if present
+                String[] values = parseCSVLine(line);
+                
+                if (values.length >= 3) {
+                    String id = values[0].trim();
+                    String title = values[1].trim();
+                    String abstractText = values[2].trim();
+                    
+                    articles.add(new Article(id, title, abstractText));
+                }
+            }
+        } catch (IOException e) {
+            System.err.println("Error reading CSV file: " + e.getMessage());
+        }
+        
+        return articles;
+    }
+
+    // Simple CSV line parser that handles basic comma separation
+    private static String[] parseCSVLine(String line) {
+        List<String> result = new ArrayList<>();
+        boolean inQuotes = false;
+        StringBuilder current = new StringBuilder();
+        
+        for (int i = 0; i < line.length(); i++) {
+            char c = line.charAt(i);
+            
+            if (c == '"') {
+                inQuotes = !inQuotes;
+            } else if (c == ',' && !inQuotes) {
+                result.add(current.toString());
+                current = new StringBuilder();
+            } else {
+                current.append(c);
+            }
+        }
+        result.add(current.toString());
+        
+        return result.toArray(new String[0]);
+    }
+
     // ---------- TEST ----------
     public static void main(String[] args) {
-        ArrayList<Article> arrayList = new ArrayList<>();
-        LinkedList<Article> linkedList = new LinkedList<>();
-
-        //sample data
-        arrayList.add(new Article("Alpha", "John"));
-        arrayList.add(new Article("Beta", "Jane"));
-        arrayList.add(new Article("Gamma", "Jim"));
+        // Read data from CSV file
+        List<Article> csvData = readCSV("test.csv");
+        
+        if (csvData.isEmpty()) {
+            System.out.println("No data found in CSV file or file not found.");
+            return;
+        }
+        
+        // Create ArrayList and LinkedList from CSV data
+        ArrayList<Article> arrayList = new ArrayList<>(csvData);
+        LinkedList<Article> linkedList = new LinkedList<>(csvData);
+        
+        // Sort for binary, jump, and exponential searches
         Collections.sort(arrayList);
+        Collections.sort(linkedList);
+        
+        System.out.println("Loaded " + arrayList.size() + " articles from CSV");
+        System.out.println("First few articles:");
+        for (int i = 0; i < Math.min(3, arrayList.size()); i++) {
+            System.out.println("  " + arrayList.get(i));
+        }
+        System.out.println();
+        
+        // Search for the first article as an example
+        if (!arrayList.isEmpty()) {
+            Article searchKey = arrayList.get(0); // Search for first article
+            System.out.println("Searching for: " + searchKey.getTitle());
+            System.out.println();
+            
+            //linear
+            System.out.println("Linear ArrayList: " + linearSearchArrayList(arrayList, searchKey));
+            System.out.println("Linear LinkedList: " + linearSearchLinkedList(linkedList, searchKey));
 
-        linkedList.addAll(arrayList);
-        Article searchKey = new Article("Beta", "Jane");
+            //binary
+            System.out.println("Binary ArrayList: " + binarySearchArrayList(arrayList, searchKey));
+            System.out.println("Binary LinkedList: " + binarySearchLinkedList(linkedList, searchKey));
 
-        //linear
-        System.out.println("Linear ArrayList: " + linearSearchArrayList(arrayList, searchKey));
-        System.out.println("Linear LinkedList: " + linearSearchLinkedList(linkedList, searchKey));
+            //jump
+            System.out.println("Jump ArrayList: " + jumpSearchArrayList(arrayList, searchKey));
+            System.out.println("Jump LinkedList: " + jumpSearchLinkedList(linkedList, searchKey));
 
-        //binary
-        System.out.println("Binary ArrayList: " + binarySearchArrayList(arrayList, searchKey));
-        System.out.println("Binary LinkedList: " + binarySearchLinkedList(linkedList, searchKey));
-
-        //jump
-        System.out.println("Jump ArrayList: " + jumpSearchArrayList(arrayList, searchKey));
-        System.out.println("Jump LinkedList: " + jumpSearchLinkedList(linkedList, searchKey));
-
-        //exponential
-        System.out.println("Exponential ArrayList: " + exponentialSearchArrayList(arrayList, searchKey));
-        System.out.println("Exponential LinkedList: " + exponentialSearchLinkedList(linkedList, searchKey));
+            //exponential
+            System.out.println("Exponential ArrayList: " + exponentialSearchArrayList(arrayList, searchKey));
+            System.out.println("Exponential LinkedList: " + exponentialSearchLinkedList(linkedList, searchKey));
+        }
     }
 }
