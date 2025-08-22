@@ -20,15 +20,24 @@ public class Article implements Comparable<Article> {
         this.quantitativeFinance = quantitativeFinance;
     }
 
-    public String getId() { return id; }
-    public String getTitle() { return title; }
-    public String getAbstractText() { return abstractText; }
-    public int getComputerScience() { return computerScience; }
-    public int getPhysics() { return physics; }
-    public int getMathematics() { return mathematics; }
-    public int getStatistics() { return statistics; }
-    public int getQuantitativeBiology() { return quantitativeBiology; }
-    public int getQuantitativeFinance() { return quantitativeFinance; }
+    public String getId() { 
+        return id; }
+    public String getTitle() { 
+        return title; }
+    public String getAbstractText() { 
+        return abstractText; }
+    public int getComputerScience() { 
+        return computerScience; }
+    public int getPhysics() { 
+        return physics; }
+    public int getMathematics() { 
+        return mathematics; }
+    public int getStatistics() { 
+        return statistics; }
+    public int getQuantitativeBiology() { 
+        return quantitativeBiology; }
+    public int getQuantitativeFinance() { 
+        return quantitativeFinance; }
 
     @Override
     public int compareTo(Article other) {
@@ -37,10 +46,14 @@ public class Article implements Comparable<Article> {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
+        if (this == obj) 
+            return true;
+
+        if (obj == null || getClass() != obj.getClass()) 
+            return false;
+            
         Article article = (Article) obj;
-        return Objects.equals(id, article.id) || Objects.equals(title, article.title);
+            return Objects.equals(id, article.id) || Objects.equals(title, article.title);
     }
 
     @Override
