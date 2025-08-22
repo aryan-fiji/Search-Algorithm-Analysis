@@ -2,11 +2,13 @@ import java.util.*;
 
 public class Main {
     public static void main(String[] args) {
-        List<Article> csvData = CSVUtils.readCSV("c:/Users/aryan/OneDrive/Documents/CS214/CS214-Assignment-1/CS214-Assignment-1/src/main/resources/Article.csv");
+        List<Article> csvData = CSVReader.readCSV("src/main/resources/Article.csv");
         if (csvData.isEmpty()) {
             System.out.println("No data found in CSV file or file not found.");
             return;
         }
+        
+        // Create both ArrayList and LinkedList from the same data for comparison
         ArrayList<Article> arrayList = new ArrayList<>(csvData);
         LinkedList<Article> linkedList = new LinkedList<>(csvData);
 
@@ -38,98 +40,152 @@ public class Main {
         System.out.print("Enter ID: ");
         String id = scanner.nextLine().trim();
         
+        // Step 1: Choose search algorithm
         int algorithmChoice = displayAlgorithmMenu(scanner);
         if (algorithmChoice == -1) return;
-
-        // Create a target article for comparison-based searches
-        Article targetArticle = new Article(id, "", "", 0, 0, 0, 0, 0, 0);
         
+        // Step 2: Choose data structure
+        int dataStructureChoice = displayDataStructureMenu(scanner);
+        if (dataStructureChoice == -1) return;
+
         long startTime = System.nanoTime();
         Article result = null;
         int index = -1;
         
+        // Execute search based on algorithm and data structure choice
         switch (algorithmChoice) {
-            case 1: // Linear Search - ArrayList
-                result = SearchAlgorithms.searchById(arrayList, id);
+            case 1: // Linear Search
+                if (dataStructureChoice == 1) { 
+                    // ArrayList
+                    result = SearchAlgorithms.searchById(arrayList, id);
+                } 
+                else { 
+                    // LinkedList
+                    result = SearchAlgorithms.searchById(linkedList, id);
+                }
                 break;
-            case 2: // Linear Search - LinkedList
-                result = SearchAlgorithms.searchById(linkedList, id);
+                
+            case 2: // Binary Search (requires sorting by ID)
+                if (dataStructureChoice == 1) { 
+                    // ArrayList
+                    ArrayList<Article> sortedArrayList = new ArrayList<>(arrayList);
+                    sortedArrayList.sort(Comparator.comparing(Article::getId));
+                    index = SearchAlgorithms.binarySearchArrayListById(sortedArrayList, id);
+                    result = index != -1 ? sortedArrayList.get(index) : null;
+                } 
+                else { 
+                    // LinkedList
+                    LinkedList<Article> sortedLinkedList = new LinkedList<>(linkedList);
+                    sortedLinkedList.sort(Comparator.comparing(Article::getId));
+                    index = SearchAlgorithms.binarySearchLinkedListById(sortedLinkedList, id);
+                    result = index != -1 ? sortedLinkedList.get(index) : null;
+                }
                 break;
-            case 3: // Binary Search - ArrayList (requires sorting)
-                ArrayList<Article> sortedArrayList = new ArrayList<>(arrayList);
-                Collections.sort(sortedArrayList);
-                index = SearchAlgorithms.binarySearchArrayList(sortedArrayList, targetArticle);
-                result = index != -1 ? sortedArrayList.get(index) : null;
+                
+            case 3: // Jump Search (requires sorting by ID)
+                if (dataStructureChoice == 1) { 
+                    // ArrayList
+                    ArrayList<Article> jumpArrayList = new ArrayList<>(arrayList);
+                    jumpArrayList.sort(Comparator.comparing(Article::getId));
+                    index = SearchAlgorithms.jumpSearchArrayListById(jumpArrayList, id);
+                    result = index != -1 ? jumpArrayList.get(index) : null;
+                } 
+                else { 
+                    // LinkedList
+                    LinkedList<Article> jumpLinkedList = new LinkedList<>(linkedList);
+                    jumpLinkedList.sort(Comparator.comparing(Article::getId));
+                    index = SearchAlgorithms.jumpSearchLinkedListById(jumpLinkedList, id);
+                    result = index != -1 ? jumpLinkedList.get(index) : null;
+                }
                 break;
-            case 4: // Binary Search - LinkedList (requires sorting)
-                LinkedList<Article> sortedLinkedList = new LinkedList<>(linkedList);
-                Collections.sort(sortedLinkedList);
-                index = SearchAlgorithms.binarySearchLinkedList(sortedLinkedList, targetArticle);
-                result = index != -1 ? sortedLinkedList.get(index) : null;
-                break;
-            case 5: // Jump Search - ArrayList (requires sorting)
-                ArrayList<Article> jumpArrayList = new ArrayList<>(arrayList);
-                Collections.sort(jumpArrayList);
-                index = SearchAlgorithms.jumpSearchArrayList(jumpArrayList, targetArticle);
-                result = index != -1 ? jumpArrayList.get(index) : null;
-                break;
-            case 6: // Jump Search - LinkedList (requires sorting)
-                LinkedList<Article> jumpLinkedList = new LinkedList<>(linkedList);
-                Collections.sort(jumpLinkedList);
-                index = SearchAlgorithms.jumpSearchLinkedList(jumpLinkedList, targetArticle);
-                result = index != -1 ? jumpLinkedList.get(index) : null;
-                break;
-            case 7: // Exponential Search - ArrayList (requires sorting)
-                ArrayList<Article> expArrayList = new ArrayList<>(arrayList);
-                Collections.sort(expArrayList);
-                index = SearchAlgorithms.exponentialSearchArrayList(expArrayList, targetArticle);
-                result = index != -1 ? expArrayList.get(index) : null;
-                break;
-            case 8: // Exponential Search - LinkedList (requires sorting)
-                LinkedList<Article> expLinkedList = new LinkedList<>(linkedList);
-                Collections.sort(expLinkedList);
-                index = SearchAlgorithms.exponentialSearchLinkedList(expLinkedList, targetArticle);
-                result = index != -1 ? expLinkedList.get(index) : null;
+                
+            case 4: // Exponential Search (requires sorting by ID)
+                if (dataStructureChoice == 1) { 
+                    // ArrayList
+                    ArrayList<Article> expArrayList = new ArrayList<>(arrayList);
+                    expArrayList.sort(Comparator.comparing(Article::getId));
+                    index = SearchAlgorithms.exponentialSearchArrayListById(expArrayList, id);
+                    result = index != -1 ? expArrayList.get(index) : null;
+                } 
+                else { 
+                    // LinkedList
+                    LinkedList<Article> expLinkedList = new LinkedList<>(linkedList);
+                    expLinkedList.sort(Comparator.comparing(Article::getId));
+                    index = SearchAlgorithms.exponentialSearchLinkedListById(expLinkedList, id);
+                    result = index != -1 ? expLinkedList.get(index) : null;
+                }
                 break;
         }
         
         long endTime = System.nanoTime();
         double timeInSeconds = (endTime - startTime) / 1_000_000_000.0;
         
+        // Display results
+        String algorithmName = getAlgorithmName(algorithmChoice);
+        String dataStructureName = dataStructureChoice == 1 ? "ArrayList" : "LinkedList";
+        
         if (result != null) {
-            System.out.println("\nArticle found:");
+            System.out.println("\nArticle found using " + algorithmName + " on " + dataStructureName + ":");
             System.out.println(result);
             System.out.printf("Search completed in: %.6f seconds\n", timeInSeconds);
-        } else {
-            System.out.println("Error: Article not found.");
+        } 
+        else {
+            System.out.println("Error: Article not found using " + algorithmName + " on " + dataStructureName + ".");
             System.out.printf("Search completed in: %.6f seconds\n", timeInSeconds);
         }
     }
 
     private static int displayAlgorithmMenu(Scanner scanner) {
         System.out.println("\nChoose a search algorithm:");
-        System.out.println("1. Linear Search - ArrayList");
-        System.out.println("2. Linear Search - LinkedList");
-        System.out.println("3. Binary Search - ArrayList");
-        System.out.println("4. Binary Search - LinkedList");
-        System.out.println("5. Jump Search - ArrayList");
-        System.out.println("6. Jump Search - LinkedList");
-        System.out.println("7. Exponential Search - ArrayList");
-        System.out.println("8. Exponential Search - LinkedList");
-        System.out.print("Enter algorithm choice (1-8): ");
+        System.out.println("1. Linear Search");
+        System.out.println("2. Binary Search");
+        System.out.println("3. Jump Search");
+        System.out.println("4. Exponential Search");
+        System.out.print("Enter algorithm choice (1-4): ");
         
         String input = scanner.nextLine().trim();
         try {
             int choice = Integer.parseInt(input);
-            if (choice >= 1 && choice <= 8) {
+            if (choice >= 1 && choice <= 4) {
                 return choice;
             } else {
-                System.out.println("Invalid choice. Please enter a number between 1 and 8.");
+                System.out.println("Invalid choice. Please enter a number between 1 and 4.");
                 return -1;
             }
         } catch (NumberFormatException e) {
-            System.out.println("Invalid input. Please enter a number between 1 and 8.");
+            System.out.println("Invalid input. Please enter a number between 1 and 4.");
             return -1;
+        }
+    }
+    
+    private static int displayDataStructureMenu(Scanner scanner) {
+        System.out.println("\nChoose a data structure:");
+        System.out.println("1. ArrayList");
+        System.out.println("2. LinkedList");
+        System.out.print("Enter data structure choice (1-2): ");
+        
+        String input = scanner.nextLine().trim();
+        try {
+            int choice = Integer.parseInt(input);
+            if (choice >= 1 && choice <= 2) {
+                return choice;
+            } else {
+                System.out.println("Invalid choice. Please enter 1 for ArrayList or 2 for LinkedList.");
+                return -1;
+            }
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid input. Please enter 1 for ArrayList or 2 for LinkedList.");
+            return -1;
+        }
+    }
+    
+    private static String getAlgorithmName(int algorithmChoice) {
+        switch (algorithmChoice) {
+            case 1: return "Linear Search";
+            case 2: return "Binary Search";
+            case 3: return "Jump Search";
+            case 4: return "Exponential Search";
+            default: return "Unknown Algorithm";
         }
     }
 }

@@ -6,6 +6,7 @@ public class Article implements Comparable<Article> {
     private String abstractText;
     private int computerScience, physics, mathematics, statistics, quantitativeBiology, quantitativeFinance;
 
+    //setters
     public Article(String id, String title, String abstractText,
                    int computerScience, int physics, int mathematics, int statistics,
                    int quantitativeBiology, int quantitativeFinance) {
@@ -20,6 +21,7 @@ public class Article implements Comparable<Article> {
         this.quantitativeFinance = quantitativeFinance;
     }
 
+    //getters
     public String getId() { 
         return id; }
     public String getTitle() { 
@@ -39,11 +41,13 @@ public class Article implements Comparable<Article> {
     public int getQuantitativeFinance() { 
         return quantitativeFinance; }
 
+    // Sort articles by the title
     @Override
     public int compareTo(Article other) {
         return this.title.compareToIgnoreCase(other.title);
     }
 
+    // Two articles are equal if they have same ID OR same title
     @Override
     public boolean equals(Object obj) {
         if (this == obj) 
@@ -56,6 +60,7 @@ public class Article implements Comparable<Article> {
             return Objects.equals(id, article.id) || Objects.equals(title, article.title);
     }
 
+    // Hash based on both ID and title for consistency
     @Override
     public int hashCode() {
         return Objects.hash(id, title);
