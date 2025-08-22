@@ -277,10 +277,9 @@ public class CSVReader {
                 new InputStreamReader(new FileInputStream(filePath), StandardCharsets.UTF_8))) {
             
             int lineCount = 0;
-            String line;
             long fileSize = new File(filePath).length();
             
-            while ((line = br.readLine()) != null) {
+            while ((br.readLine()) != null) {
                 lineCount++;
             }
             

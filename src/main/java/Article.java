@@ -6,7 +6,7 @@ public class Article implements Comparable<Article> {
     private String abstractText;
     private int computerScience, physics, mathematics, statistics, quantitativeBiology, quantitativeFinance;
 
-    //setters
+    // Constructors
     public Article(String id, String title, String abstractText,
                    int computerScience, int physics, int mathematics, int statistics,
                    int quantitativeBiology, int quantitativeFinance) {
@@ -21,33 +21,94 @@ public class Article implements Comparable<Article> {
         this.quantitativeFinance = quantitativeFinance;
     }
 
-    //getters
+    // Getters
     public String getId() { 
-        return id; }
+        return id; 
+    }
+    
     public String getTitle() { 
-        return title; }
+        return title; 
+    }
+    
     public String getAbstractText() { 
-        return abstractText; }
+        return abstractText; 
+    }
+    
     public int getComputerScience() { 
-        return computerScience; }
+        return computerScience; 
+    }
+    
     public int getPhysics() { 
-        return physics; }
+        return physics; 
+    }
+    
     public int getMathematics() { 
-        return mathematics; }
+        return mathematics; 
+    }
+    
     public int getStatistics() { 
-        return statistics; }
+        return statistics; 
+    }
+    
     public int getQuantitativeBiology() { 
-        return quantitativeBiology; }
+        return quantitativeBiology; 
+    }
+    
     public int getQuantitativeFinance() { 
-        return quantitativeFinance; }
-
-    // Sort articles by the title
-    @Override
-    public int compareTo(Article other) {
-        return this.title.compareToIgnoreCase(other.title);
+        return quantitativeFinance; 
     }
 
-    // Two articles are equal if they have same ID OR same title
+    // Setters
+    public void setId(String id) {
+        this.id = id;
+    }
+    
+    public void setTitle(String title) {
+        this.title = title;
+    }
+    
+    public void setAbstractText(String abstractText) {
+        this.abstractText = abstractText;
+    }
+    
+    public void setComputerScience(int computerScience) {
+        this.computerScience = computerScience;
+    }
+    
+    public void setPhysics(int physics) {
+        this.physics = physics;
+    }
+    
+    public void setMathematics(int mathematics) {
+        this.mathematics = mathematics;
+    }
+    
+    public void setStatistics(int statistics) {
+        this.statistics = statistics;
+    }
+    
+    public void setQuantitativeBiology(int quantitativeBiology) {
+        this.quantitativeBiology = quantitativeBiology;
+    }
+    
+    public void setQuantitativeFinance(int quantitativeFinance) {
+        this.quantitativeFinance = quantitativeFinance;
+    }
+
+    // Sort articles by ID
+    @Override
+    public int compareTo(Article other) {
+        if (other == null) return 1;
+        return this.id.compareTo(other.id);
+    }
+    
+    // Compare based on ID only for search operations
+    public int compareTo(String otherId) {
+        if (otherId == null) return 1;
+        return this.id.compareTo(otherId);
+    }
+
+    // Two articles are equal if they have same ID
     @Override
     public boolean equals(Object obj) {
         if (this == obj) 
@@ -57,23 +118,67 @@ public class Article implements Comparable<Article> {
             return false;
             
         Article article = (Article) obj;
-            return Objects.equals(id, article.id) || Objects.equals(title, article.title);
+        return Objects.equals(id, article.id);
     }
 
-    // Hash based on both ID and title for consistency
+    // Hash based on ID for consistency with equals
     @Override
     public int hashCode() {
-        return Objects.hash(id, title);
+        return Objects.hash(id);
     }
 
+    // String representation for debugging
     @Override
     public String toString() {
-        return "ID: " + id + "\nTitle: " + title + "\nAbstract: " + abstractText +
-               "\nComputer Science: " + computerScience +
-               "\nPhysics: " + physics +
-               "\nMathematics: " + mathematics +
-               "\nStatistics: " + statistics +
-               "\nQuantitative Biology: " + quantitativeBiology +
-               "\nQuantitative Finance: " + quantitativeFinance;
+        return "ID: " + id + 
+               "\nTitle: " + title + 
+               "\nAbstract:\n" + abstractText +
+               ", Physics: " + physics + 
+               ", Math: " + mathematics + 
+               ", Stats: " + statistics + 
+               ", QuantBio: " + quantitativeBiology + 
+               ", QuantFin: " + quantitativeFinance + "]";
+    }
+
+    //Checks if this article matches a given ID
+    public boolean matchesId(String searchId) {
+        return this.id.equals(searchId);
+    }
+    
+    public boolean hasCategories() {
+        return computerScience > 0 || physics > 0 || mathematics > 0 || 
+               statistics > 0 || quantitativeBiology > 0 || quantitativeFinance > 0;
+    }
+    
+    public int getCategoryCount() {
+        return computerScience + physics + mathematics + statistics + quantitativeBiology + quantitativeFinance;
+    }
+
+    public String toShortString() {
+        return "Article{id='" + id + "', title='" + 
+               (title.length() > 30 ? title.substring(0, 30) + "..." : title) + "'}";
+    }
+    
+    public Article copy() {
+        return new Article(id, title, abstractText, computerScience, physics, 
+                          mathematics, statistics, quantitativeBiology, quantitativeFinance);
+    }
+    
+    public static Article createDummyArticle(String id) {
+        return new Article(id, "", "", 0, 0, 0, 0, 0, 0);
+    }
+    
+    // Compares articles
+    public boolean deepEquals(Article other) {
+        if (other == null) return false;
+        return Objects.equals(id, other.id) &&
+               Objects.equals(title, other.title) &&
+               Objects.equals(abstractText, other.abstractText) &&
+               computerScience == other.computerScience &&
+               physics == other.physics &&
+               mathematics == other.mathematics &&
+               statistics == other.statistics &&
+               quantitativeBiology == other.quantitativeBiology &&
+               quantitativeFinance == other.quantitativeFinance;
     }
 }
