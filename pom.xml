@@ -15,10 +15,25 @@
     </properties>
     
     <dependencies>
+        <!-- Existing dependency -->
         <dependency>
             <groupId>com.opencsv</groupId>
             <artifactId>opencsv</artifactId>
             <version>5.7.1</version>
+        </dependency>
+
+        <!-- JFreeChart for plotting -->
+        <dependency>
+            <groupId>org.jfree</groupId>
+            <artifactId>jfreechart</artifactId>
+            <version>1.5.3</version>
+        </dependency>
+
+        <!-- JCommon (required by JFreeChart) -->
+        <dependency>
+            <groupId>org.jfree</groupId>
+            <artifactId>jcommon</artifactId>
+            <version>1.0.24</version>
         </dependency>
     </dependencies>
 </project>
