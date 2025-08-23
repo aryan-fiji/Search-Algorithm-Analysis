@@ -16,18 +16,13 @@
     </properties>
     
     <dependencies>
-<<<<<<< HEAD
         <!-- OpenCSV for reading/writing CSV files -->
-=======
-        <!-- Existing dependency -->
->>>>>>> 826f189a66a7139838e2119984acd61db6a9d90e
         <dependency>
             <groupId>com.opencsv</groupId>
             <artifactId>opencsv</artifactId>
             <version>5.7.1</version>
         </dependency>
 
-<<<<<<< HEAD
         <!-- JFreeChart for plotting - Updated version -->
         <dependency>
             <groupId>org.jfree</groupId>
@@ -66,20 +61,3 @@
         </plugins>
     </build>
 </project>
-=======
-        <!-- JFreeChart for plotting -->
-        <dependency>
-            <groupId>org.jfree</groupId>
-            <artifactId>jfreechart</artifactId>
-            <version>1.5.3</version>
-        </dependency>
-
-        <!-- JCommon (required by JFreeChart) -->
-        <dependency>
-            <groupId>org.jfree</groupId>
-            <artifactId>jcommon</artifactId>
-            <version>1.0.24</version>
-        </dependency>
-    </dependencies>
-</project>
->>>>>>> 826f189a66a7139838e2119984acd61db6a9d90e
