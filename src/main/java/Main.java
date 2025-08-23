@@ -27,7 +27,8 @@ public class Main {
             System.out.println("\nChoose an option:");
             System.out.println("1. Search article using ID");
             System.out.println("2. Race all search algorithms (30 runs)");
-            System.out.println("3. End program");
+            System.out.println("3. Generate performance visualization graphs");
+            System.out.println("4. End program");
             System.out.print("Enter choice: ");
             String choice = scanner.nextLine().trim();
 
@@ -36,9 +37,14 @@ public class Main {
                     handleArticleSearch(scanner, arrayList, linkedList);
                     break;
                 case "2":
-                    raceAllAlgorithms(arrayList, linkedList);
+                    Map<String, AlgorithmStats> results = raceAllAlgorithms(arrayList, linkedList);
                     break;
                 case "3":
+                    System.out.println("Generating performance visualizations...");
+                    Map<String, AlgorithmStats> raceResults = raceAllAlgorithms(arrayList, linkedList);
+                    Graphs.generateAllVisualizations(raceResults, arrayList, linkedList);
+                    break;
+                case "4":
                     System.out.println("Program ended.");
                     scanner.close();
                     return;
@@ -100,9 +106,16 @@ public class Main {
             System.out.println("Error: Article not found using " + algorithmName + " on " + dataStructureName + ".");
             System.out.printf("Search completed in: %.9f seconds\n", timeInSeconds);
         }
+        
+        // Performance warning for LinkedList with non-linear algorithms
+        if (dataStructureChoice == 2 && algorithmChoice > 1) {
+            System.out.println("\nPerformance Note: " + algorithmName + 
+                " on LinkedList is inefficient due to O(n) random access time.");
+            System.out.println("Consider using ArrayList for better performance with " + algorithmName + ".");
+        }
     }
 
-    private static void raceAllAlgorithms(ArrayList<Article> arrayList, LinkedList<Article> linkedList) {
+    public static Map<String, AlgorithmStats> raceAllAlgorithms(ArrayList<Article> arrayList, LinkedList<Article> linkedList) {
         System.out.println("\n=== SEARCH ALGORITHMS RACE(" + NUM_RUNS + " RUNS - ALL ALGORITHMS) ===");
         
         // Prepare test keys (mix of existing and non-existing IDs)
@@ -184,6 +197,31 @@ public class Main {
                     stats.getFoundCount(),
                     stats.getTotalRuns());
             });
+        
+        // Performance analysis
+        System.out.println("\n=== PERFORMANCE ANALYSIS ===");
+        analyzeLinkedListPerformance(statsMap);
+        
+        return statsMap;
+    }
+
+    private static void analyzeLinkedListPerformance(Map<String, AlgorithmStats> statsMap) {
+        System.out.println("\nLinkedList Performance Analysis:");
+        System.out.println("- Linear Search: Optimal for LinkedList (sequential access)");
+        System.out.println("- Binary/Jump/Exponential Search: Poor performance due to O(n) random access");
+        System.out.println("- ArrayList is recommended for algorithms requiring random access");
+        
+        // Compare same algorithm performance between data structures
+        String[] algorithms = {"Linear", "Binary", "Jump", "Exponential"};
+        for (String algo : algorithms) {
+            AlgorithmStats arrayStats = statsMap.get(algo + " - ArrayList");
+            AlgorithmStats linkedStats = statsMap.get(algo + " - LinkedList");
+            
+            if (arrayStats != null && linkedStats != null) {
+                double ratio = linkedStats.getMeanTime() / arrayStats.getMeanTime();
+                System.out.printf("- %s: LinkedList is %.1fx slower than ArrayList%n", algo, ratio);
+            }
+        }
     }
 
     private static List<String> prepareTestKeys(List<Article> articles, int numKeys) {
@@ -245,7 +283,7 @@ public class Main {
         return -1;
     }
     
-    private static class AlgorithmConfig {
+    public static class AlgorithmConfig {
         String name;
         SearchFunction searchFunction;
         
@@ -259,14 +297,14 @@ public class Main {
         int search(List<Article> list, String key);
     }
     
-    private static class AlgorithmStats {
+    public static class AlgorithmStats {
         private double bestTime = Double.MAX_VALUE;
         private double worstTime = Double.MIN_VALUE;
         private double totalTime = 0;
         private int foundCount = 0;
         private int totalRuns = 0;
         
-        void addResult(double time, boolean found, int run) {
+        public void addResult(double time, boolean found, int run) {
             bestTime = Math.min(bestTime, time);
             worstTime = Math.max(worstTime, time);
             totalTime += time;
@@ -274,15 +312,15 @@ public class Main {
             if (found) foundCount++;
         }
         
-        double getBestTime() { 
+        public double getBestTime() { 
             return bestTime; }
-        double getWorstTime() { 
+        public double getWorstTime() { 
             return worstTime; }
-        double getMeanTime() { 
+        public double getMeanTime() { 
             return totalRuns > 0 ? totalTime / totalRuns : 0; }
-        int getFoundCount() { 
+        public int getFoundCount() { 
             return foundCount; }
-        int getTotalRuns() { 
+        public int getTotalRuns() { 
             return totalRuns; }
     }
 }

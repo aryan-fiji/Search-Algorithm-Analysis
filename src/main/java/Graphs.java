@@ -1,5 +1,5 @@
-import java.util.Arrays;
-import java.util.Random;
+import java.util.*;
+import java.util.List;
 
 import javax.swing.JFrame;
 
@@ -10,95 +10,166 @@ import org.jfree.data.category.DefaultCategoryDataset;
 
 public class Graphs {
 
-    static int comparisonCount;
-
-    // ----- Linear Search -----
-    public static int linearSearch(int[] arr, int key) {
-        comparisonCount = 0;
-        for (int i = 0; i < arr.length; i++) {
-            comparisonCount++;
-            if (arr[i] == key) return i;
-        }
-        return -1;
-    }
-
-    // ----- Binary Search -----
-    public static int binarySearch(int[] arr, int key) {
-        comparisonCount = 0;
-        int left = 0, right = arr.length - 1;
-        while (left <= right) {
-            comparisonCount++;
-            int mid = (left + right) / 2;
-            if (arr[mid] == key) return mid;
-            else if (arr[mid] < key) left = mid + 1;
-            else right = mid - 1;
-        }
-        return -1;
-    }
-
-    // ----- Jump Search -----
-    public static int jumpSearch(int[] arr, int key) {
-        comparisonCount = 0;
-        int n = arr.length;
-        int step = (int) Math.sqrt(n);
-        int prev = 0;
-
-        // Jump through blocks
-        while (arr[Math.min(step, n) - 1] < key) {
-            comparisonCount++;
-            prev = step;
-            step += (int) Math.sqrt(n);
-            if (prev >= n) return -1;
-        }
+    // Main method to generate all visualizations from actual performance data
+    public static void generateAllVisualizations(Map<String, Main.AlgorithmStats> performanceData, 
+                                                ArrayList<Article> arrayList, LinkedList<Article> linkedList) {
+        System.out.println("Generating performance visualizations...");
         
-        // Linear search in the identified block
-        for (int i = prev; i < Math.min(step, n); i++) {
-            comparisonCount++;
-            if (arr[i] == key) return i;
+        try {
+            // 1. Race Results - Mean Time Comparison
+            generateRaceChart(performanceData);
+            Thread.sleep(1000);
+            
+            // 2. Best/Mean/Worst Analysis
+            generateBestMeanWorstChart(performanceData);
+            Thread.sleep(1000);
+            
+            // 3. ArrayList vs LinkedList Comparison
+            generateDataStructureComparisonChart(performanceData);
+            Thread.sleep(1000);
+            
+            // 4. Theoretical vs Empirical Complexity
+            generateComplexityAnalysisChart(performanceData, arrayList.size());
+            Thread.sleep(1000);
+            
+            // 5. Algorithm Performance by Data Structure
+            generateAlgorithmByDataStructureChart(performanceData);
+            
+            System.out.println("All visualizations generated successfully!");
+            
+        } catch (InterruptedException e) {
+            System.err.println("Visualization interrupted: " + e.getMessage());
         }
-        return -1;
     }
 
-    // ----- Exponential Search -----
-    public static int exponentialSearch(int[] arr, int key) {
-        comparisonCount = 0;
+    // 1. Race Results - Show mean performance of all algorithm/data structure combinations
+    private static void generateRaceChart(Map<String, Main.AlgorithmStats> performanceData) {
+        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
         
-        // Check first element
-        if (arr[0] == key) {
-            comparisonCount++;
-            return 0;
-        }
+        // Sort by mean time for better visualization
+        performanceData.entrySet().stream()
+            .sorted((e1, e2) -> Double.compare(e1.getValue().getMeanTime(), e2.getValue().getMeanTime()))
+            .forEach(entry -> {
+                dataset.addValue(entry.getValue().getMeanTime(), 
+                               "Mean Time", entry.getKey());
+            });
+
+        JFreeChart chart = ChartFactory.createBarChart(
+            "Algorithm Race Results - Mean Execution Time",
+            "Algorithm - Data Structure",
+            "Mean Time (milliseconds)",
+            dataset
+        );
         
-        // Find range for binary search by repeated doubling
-        int i = 1;
-        while (i < arr.length && arr[i] <= key) {
-            comparisonCount++;
-            i *= 2;
-        }
-        
-        // Perform binary search in the found range
-        return binarySearchInRange(arr, i / 2, Math.min(i, arr.length - 1), key);
-    }
-    
-    // Helper method for exponential search - binary search in a specific range
-    private static int binarySearchInRange(int[] arr, int left, int right, int key) {
-        while (left <= right) {
-            comparisonCount++;
-            int mid = left + (right - left) / 2;
-            if (arr[mid] == key) return mid;
-            else if (arr[mid] < key) left = mid + 1;
-            else right = mid - 1;
-        }
-        return -1;
+        showChart(chart, "Race Results - Mean Performance");
     }
 
-    // ---------- Part 2: Race Algorithms (Timing) ----------
+    // 2. Best/Mean/Worst case analysis for each algorithm
+    private static void generateBestMeanWorstChart(Map<String, Main.AlgorithmStats> performanceData) {
+        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+        
+        performanceData.forEach((algorithmName, stats) -> {
+            dataset.addValue(stats.getBestTime(), "Best Case", algorithmName);
+            dataset.addValue(stats.getMeanTime(), "Mean Case", algorithmName);
+            dataset.addValue(stats.getWorstTime(), "Worst Case", algorithmName);
+        });
+
+        JFreeChart chart = ChartFactory.createBarChart(
+            "Best, Mean, Worst Case Performance Analysis",
+            "Algorithm - Data Structure",
+            "Execution Time (milliseconds)",
+            dataset
+        );
+        
+        showChart(chart, "Best/Mean/Worst Case Analysis");
+    }
+
+    // 3. ArrayList vs LinkedList performance comparison
+    private static void generateDataStructureComparisonChart(Map<String, Main.AlgorithmStats> performanceData) {
+        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+        
+        String[] algorithms = {"Linear", "Binary", "Jump", "Exponential"};
+        
+        for (String algo : algorithms) {
+            Main.AlgorithmStats arrayStats = performanceData.get(algo + " - ArrayList");
+            Main.AlgorithmStats linkedStats = performanceData.get(algo + " - LinkedList");
+            
+            if (arrayStats != null && linkedStats != null) {
+                dataset.addValue(arrayStats.getMeanTime(), "ArrayList", algo);
+                dataset.addValue(linkedStats.getMeanTime(), "LinkedList", algo);
+            }
+        }
+
+        JFreeChart chart = ChartFactory.createBarChart(
+            "ArrayList vs LinkedList Performance Comparison",
+            "Search Algorithm",
+            "Mean Time (milliseconds)",
+            dataset
+        );
+        
+        showChart(chart, "Data Structure Comparison");
+    }
+
+    // 4. Theoretical complexity vs empirical results
+    private static void generateComplexityAnalysisChart(Map<String, Main.AlgorithmStats> performanceData, int dataSize) {
+        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+        
+        // Theoretical complexities (normalized for visualization)
+        double scaleFactor = 0.001; // Scale theoretical values to match empirical scale
+        
+        dataset.addValue(dataSize * scaleFactor, "Linear O(n) - Theoretical", "Linear");
+        dataset.addValue(Math.log(dataSize) / Math.log(2) * scaleFactor * 10, "Binary O(log n) - Theoretical", "Binary");
+        dataset.addValue(Math.sqrt(dataSize) * scaleFactor * 5, "Jump O(√n) - Theoretical", "Jump");
+        dataset.addValue(Math.log(dataSize) / Math.log(2) * scaleFactor * 10, "Exponential O(log n) - Theoretical", "Exponential");
+        
+        // Empirical results (ArrayList only for fair comparison)
+        String[] algorithms = {"Linear", "Binary", "Jump", "Exponential"};
+        for (String algo : algorithms) {
+            Main.AlgorithmStats stats = performanceData.get(algo + " - ArrayList");
+            if (stats != null) {
+                dataset.addValue(stats.getMeanTime(), algo + " - Empirical", algo);
+            }
+        }
+
+        JFreeChart chart = ChartFactory.createBarChart(
+            "Theoretical vs Empirical Complexity Analysis (ArrayList)",
+            "Search Algorithm",
+            "Performance Measure",
+            dataset
+        );
+        
+        showChart(chart, "Complexity Analysis");
+    }
+
+    // 5. Performance breakdown by algorithm, grouped by data structure
+    private static void generateAlgorithmByDataStructureChart(Map<String, Main.AlgorithmStats> performanceData) {
+        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+        
+        performanceData.forEach((key, stats) -> {
+            String[] parts = key.split(" - ");
+            String algorithm = parts[0];
+            String dataStructure = parts[1];
+            
+            dataset.addValue(stats.getMeanTime(), dataStructure, algorithm);
+        });
+
+        JFreeChart chart = ChartFactory.createLineChart(
+            "Algorithm Performance by Data Structure",
+            "Search Algorithm",
+            "Mean Time (milliseconds)",
+            dataset
+        );
+        
+        showChart(chart, "Algorithm Performance Trends");
+    }
+
+    // Legacy methods for backward compatibility and additional analysis
     public static void part2_race() {
         int[] sizes = {1000, 5000, 10000, 20000, 50000};
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
         Random rand = new Random();
 
-        System.out.println("Running timing analysis...");
+        System.out.println("Running timing analysis on integer arrays...");
         
         for (int n : sizes) {
             int[] arr = new int[n];
@@ -109,96 +180,40 @@ public class Graphs {
 
             // Linear Search
             start = System.nanoTime();
-            linearSearch(arr, key);
+            linearSearchInt(arr, key);
             end = System.nanoTime();
-            dataset.addValue((end - start), "Linear", String.valueOf(n));
+            dataset.addValue((end - start) / 1_000_000.0, "Linear", String.valueOf(n));
 
             // Binary Search
             start = System.nanoTime();
-            binarySearch(arr, key);
+            binarySearchInt(arr, key);
             end = System.nanoTime();
-            dataset.addValue((end - start), "Binary", String.valueOf(n));
+            dataset.addValue((end - start) / 1_000_000.0, "Binary", String.valueOf(n));
 
             // Jump Search
             start = System.nanoTime();
-            jumpSearch(arr, key);
+            jumpSearchInt(arr, key);
             end = System.nanoTime();
-            dataset.addValue((end - start), "Jump", String.valueOf(n));
+            dataset.addValue((end - start) / 1_000_000.0, "Jump", String.valueOf(n));
 
             // Exponential Search
             start = System.nanoTime();
-            exponentialSearch(arr, key);
+            exponentialSearchInt(arr, key);
             end = System.nanoTime();
-            dataset.addValue((end - start), "Exponential", String.valueOf(n));
+            dataset.addValue((end - start) / 1_000_000.0, "Exponential", String.valueOf(n));
             
             System.out.println("Completed size: " + n);
         }
 
         JFreeChart chart = ChartFactory.createLineChart(
-                "Part 2: Algorithm Race - Execution Time",
+                "Integer Array Algorithm Race - Execution Time",
                 "Input Size (n)",
-                "Execution Time (nanoseconds)",
+                "Execution Time (milliseconds)",
                 dataset
         );
-        showChart(chart, "Part 2: Race Results");
+        showChart(chart, "Integer Array Race Results");
     }
 
-    // ---------- Part 3: Empirical Best/Mean/Worst ----------
-    public static void part3_empirical() {
-        int n = 5000;
-        int[] arr = new int[n];
-        for (int i = 0; i < n; i++) arr[i] = i;
-        Random rand = new Random();
-
-        String[] algos = {"Linear", "Binary", "Jump", "Exponential"};
-        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-
-        System.out.println("Running empirical analysis...");
-        
-        for (String algo : algos) {
-            int[] results = new int[30];
-            for (int r = 0; r < 30; r++) {
-                // Mix of found and not-found cases
-                int key = (r % 10 == 0) ? n + 1 : rand.nextInt(n);
-                
-                switch (algo) {
-                    case "Linear": 
-                        linearSearch(arr, key); 
-                        break;
-                    case "Binary": 
-                        binarySearch(arr, key); 
-                        break;
-                    case "Jump": 
-                        jumpSearch(arr, key); 
-                        break;
-                    case "Exponential": 
-                        exponentialSearch(arr, key); 
-                        break;
-                }
-                results[r] = comparisonCount;
-            }
-            
-            int best = Arrays.stream(results).min().getAsInt();
-            int worst = Arrays.stream(results).max().getAsInt();
-            double mean = Arrays.stream(results).average().orElse(0);
-
-            dataset.addValue(best, "Best", algo);
-            dataset.addValue(mean, "Mean", algo);
-            dataset.addValue(worst, "Worst", algo);
-            
-            System.out.println(algo + " - Best: " + best + ", Mean: " + String.format("%.1f", mean) + ", Worst: " + worst);
-        }
-
-        JFreeChart chart = ChartFactory.createBarChart(
-                "Part 3: Best, Mean, Worst Case Comparisons",
-                "Algorithms",
-                "Number of Comparisons",
-                dataset
-        );
-        showChart(chart, "Part 3: Best/Mean/Worst Analysis");
-    }
-
-    // ---------- Part 4: Theoretical Complexities ----------
     public static void part4_theory() {
         int[] sizes = {10, 50, 100, 500, 1000, 5000};
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
@@ -206,54 +221,108 @@ public class Graphs {
         System.out.println("Generating theoretical complexity comparison...");
         
         for (int n : sizes) {
-            // Scale theoretical complexities for better visualization
-            dataset.addValue(n / 10.0, "Linear O(n)", String.valueOf(n));
+            dataset.addValue(n / 100.0, "Linear O(n)", String.valueOf(n));
             dataset.addValue(Math.log(n) / Math.log(2), "Binary O(log n)", String.valueOf(n));
             dataset.addValue(Math.sqrt(n), "Jump O(√n)", String.valueOf(n));
             dataset.addValue(Math.log(n) / Math.log(2), "Exponential O(log n)", String.valueOf(n));
         }
 
         JFreeChart chart = ChartFactory.createLineChart(
-                "Part 4: Theoretical Time Complexities",
+                "Theoretical Time Complexities",
                 "Input Size (n)",
                 "Operations (scaled for visualization)",
                 dataset
         );
-        showChart(chart, "Part 4: Theoretical Complexities");
+        showChart(chart, "Theoretical Complexities");
     }
 
-    // ---------- Utility: Show Chart ----------
+    // Integer array search implementations for legacy support
+    private static int linearSearchInt(int[] arr, int key) {
+        for (int i = 0; i < arr.length; i++) {
+            if (arr[i] == key) return i;
+        }
+        return -1;
+    }
+
+    private static int binarySearchInt(int[] arr, int key) {
+        int left = 0, right = arr.length - 1;
+        while (left <= right) {
+            int mid = (left + right) / 2;
+            if (arr[mid] == key) return mid;
+            else if (arr[mid] < key) left = mid + 1;
+            else right = mid - 1;
+        }
+        return -1;
+    }
+
+    private static int jumpSearchInt(int[] arr, int key) {
+        int n = arr.length;
+        int step = (int) Math.sqrt(n);
+        int prev = 0;
+
+        while (arr[Math.min(step, n) - 1] < key) {
+            prev = step;
+            step += (int) Math.sqrt(n);
+            if (prev >= n) return -1;
+        }
+        
+        for (int i = prev; i < Math.min(step, n); i++) {
+            if (arr[i] == key) return i;
+        }
+        return -1;
+    }
+
+    private static int exponentialSearchInt(int[] arr, int key) {
+        if (arr[0] == key) return 0;
+        
+        int i = 1;
+        while (i < arr.length && arr[i] <= key) {
+            i *= 2;
+        }
+        
+        return binarySearchInRangeInt(arr, i / 2, Math.min(i, arr.length - 1), key);
+    }
+    
+    private static int binarySearchInRangeInt(int[] arr, int left, int right, int key) {
+        while (left <= right) {
+            int mid = left + (right - left) / 2;
+            if (arr[mid] == key) return mid;
+            else if (arr[mid] < key) left = mid + 1;
+            else right = mid - 1;
+        }
+        return -1;
+    }
+
+    // Utility method to show charts
     public static void showChart(JFreeChart chart, String title) {
         JFrame frame = new JFrame(title);
-        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // Changed from EXIT_ON_CLOSE
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.setContentPane(new ChartPanel(chart));
         frame.pack();
-        frame.setLocationRelativeTo(null); // Center the window
+        frame.setLocationRelativeTo(null);
         frame.setVisible(true);
+        
+        System.out.println("Chart displayed: " + title);
     }
 
-    // ---------- Main ----------
+    // Standalone main for testing visualizations
     public static void main(String[] args) {
-        System.out.println("Starting Search Algorithm Analysis...");
+        System.out.println("Running standalone chart demonstrations...");
         System.out.println("=========================================");
         
         try {
-            // Part 2: Timing analysis
-            part2_race();
-            Thread.sleep(2000); // Give time to view the first chart
-            
-            // Part 3: Empirical analysis
-            part3_empirical();
+            // Demonstrate theoretical complexities
+            part4_theory();
             Thread.sleep(2000);
             
-            // Part 4: Theoretical comparison
-            part4_theory();
+            // Demonstrate integer array race
+            part2_race();
             
         } catch (InterruptedException e) {
             System.err.println("Thread interrupted: " + e.getMessage());
         }
         
         System.out.println("=========================================");
-        System.out.println("Analysis complete! Close chart windows when done.");
+        System.out.println("Demo complete! Close chart windows when done.");
     }
 }
