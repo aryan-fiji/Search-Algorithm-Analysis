@@ -6,7 +6,7 @@ public class Main {
     private static final Random random = new Random();
     
     public static void main(String[] args) {
-        List<Article> csvData = CSVReader.readCSV("\\src\\main\\resources\\Article.csv");
+        List<Article> csvData = CSVReader.readCSV("src\\main\\resources\\Article.csv");
         if (csvData.isEmpty()) {
             System.out.println("No data found in CSV file or file not found.");
             return;
@@ -103,7 +103,7 @@ public class Main {
     }
 
     private static void raceAllAlgorithms(ArrayList<Article> arrayList, LinkedList<Article> linkedList) {
-        System.out.println("\n=== RACING ALL SEARCH ALGORITHMS (" + NUM_RUNS + " RUNS) ===");
+        System.out.println("\n=== SEARCH ALGORITHMS RACE(" + NUM_RUNS + " RUNS - ALL ALGORITHMS) ===");
         
         // Prepare test keys (mix of existing and non-existing IDs)
         List<String> testKeys = prepareTestKeys(arrayList, NUM_RUNS);
@@ -274,10 +274,15 @@ public class Main {
             if (found) foundCount++;
         }
         
-        double getBestTime() { return bestTime; }
-        double getWorstTime() { return worstTime; }
-        double getMeanTime() { return totalRuns > 0 ? totalTime / totalRuns : 0; }
-        int getFoundCount() { return foundCount; }
-        int getTotalRuns() { return totalRuns; }
+        double getBestTime() { 
+            return bestTime; }
+        double getWorstTime() { 
+            return worstTime; }
+        double getMeanTime() { 
+            return totalRuns > 0 ? totalTime / totalRuns : 0; }
+        int getFoundCount() { 
+            return foundCount; }
+        int getTotalRuns() { 
+            return totalRuns; }
     }
 }

@@ -1,8 +1,7 @@
 import java.util.*;
 
 public class SearchAlgorithms {
-
-    // ===== ARTICLE-SPECIFIC SEARCHES =====
+    //article specific search methods
     public static int linearSearch(List<Article> list, String key) {
         for (int i = 0; i < list.size(); i++) {
             if (list.get(i).getId().equals(key)) return i;
