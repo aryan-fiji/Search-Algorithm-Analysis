@@ -6,7 +6,7 @@ public class Main {
     private static final Random random = new Random();
     
     public static void main(String[] args) {
-        List<Article> csvData = CSVReader.readCSV("src/main/resources/Article.csv");
+        List<Article> csvData = CSVReader.readCSV("\\src\\main\\resources\\Article.csv");
         if (csvData.isEmpty()) {
             System.out.println("No data found in CSV file or file not found.");
             return;

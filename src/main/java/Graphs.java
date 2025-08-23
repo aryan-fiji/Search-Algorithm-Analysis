@@ -3,7 +3,10 @@ import java.util.Random;
 
 import javax.swing.JFrame;
 
+<<<<<<< HEAD
 // JFreeChart imports
+=======
+>>>>>>> 826f189a66a7139838e2119984acd61db6a9d90e
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -69,6 +72,7 @@ public class Graphs {
             comparisonCount++;
             i *= 2;
         }
+<<<<<<< HEAD
         
         // Fix: Need to reset comparisonCount for the binary search portion
         // or add the comparisons from binary search to the total
@@ -95,6 +99,9 @@ public class Graphs {
         }
         comparisonCount = comparisons;
         return -1;
+=======
+        return binarySearch(Arrays.copyOfRange(arr, i / 2, Math.min(i, arr.length)), key);
+>>>>>>> 826f189a66a7139838e2119984acd61db6a9d90e
     }
 
     // ---------- Part 2: Race Algorithms (Timing) ----------
@@ -111,25 +118,37 @@ public class Graphs {
 
             long start, end;
 
+<<<<<<< HEAD
             // Linear Search
+=======
+>>>>>>> 826f189a66a7139838e2119984acd61db6a9d90e
             start = System.nanoTime();
             linearSearch(arr, key);
             end = System.nanoTime();
             dataset.addValue((end - start), "Linear", String.valueOf(n));
 
+<<<<<<< HEAD
             // Binary Search
+=======
+>>>>>>> 826f189a66a7139838e2119984acd61db6a9d90e
             start = System.nanoTime();
             binarySearch(arr, key);
             end = System.nanoTime();
             dataset.addValue((end - start), "Binary", String.valueOf(n));
 
+<<<<<<< HEAD
             // Jump Search
+=======
+>>>>>>> 826f189a66a7139838e2119984acd61db6a9d90e
             start = System.nanoTime();
             jumpSearch(arr, key);
             end = System.nanoTime();
             dataset.addValue((end - start), "Jump", String.valueOf(n));
 
+<<<<<<< HEAD
             // Exponential Search
+=======
+>>>>>>> 826f189a66a7139838e2119984acd61db6a9d90e
             start = System.nanoTime();
             exponentialSearch(arr, key);
             end = System.nanoTime();
@@ -160,6 +179,7 @@ public class Graphs {
             for (int r = 0; r < 30; r++) {
                 int key = (r % 10 == 0) ? n + 1 : rand.nextInt(n); // sometimes not found
                 switch (algo) {
+<<<<<<< HEAD
                     case "Linear": 
                         linearSearch(arr, key); 
                         break;
@@ -172,6 +192,12 @@ public class Graphs {
                     case "Exponential": 
                         exponentialSearch(arr, key); 
                         break;
+=======
+                    case "Linear": linearSearch(arr, key); break;
+                    case "Binary": binarySearch(arr, key); break;
+                    case "Jump": jumpSearch(arr, key); break;
+                    case "Exponential": exponentialSearch(arr, key); break;
+>>>>>>> 826f189a66a7139838e2119984acd61db6a9d90e
                 }
                 results[r] = comparisonCount;
             }
@@ -225,6 +251,7 @@ public class Graphs {
 
     // ---------- Main ----------
     public static void main(String[] args) {
+<<<<<<< HEAD
         System.out.println("Starting algorithm analysis...");
         
         try {
@@ -240,5 +267,10 @@ public class Graphs {
         }
         
         System.out.println("Analysis complete!");
+=======
+        part2_race();       // Task 2
+        part3_empirical();  // Task 3
+        part4_theory();     // Task 4
+>>>>>>> 826f189a66a7139838e2119984acd61db6a9d90e
     }
 }
