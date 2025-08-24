@@ -60,7 +60,9 @@ public class CSVReader {
                             }
                         }
 
-                    } catch (Exception e) {
+                    } 
+                    
+                    catch (Exception e) {
                         errors++;
                         if (errors <= 10) { 
                             System.err.println("Error parsing record starting at line " + recordStartLine + ": " + e.getMessage());
