@@ -27,20 +27,51 @@ This project **implements and compares four different search algorithms** on aca
 
 ```
 .
-├── Main.java                  # Main program with CLI and performance testing
-├── SearchAlgorithms.java      # All four search algorithm implementations  
-├── Article.java               # Article data model with comparison methods
-├── CSVReader.java            # Robust CSV parsing with error handling
-├── Graphs.java               # JFreeChart visualization utilities
-├── jfreechart-*.jar          # JFreeChart library
-└── src/main/resources/
-    └── Article.csv           # Dataset with 20,972+ academic articles
+├── .idea/                          # IntelliJ IDEA configuration files
+│   ├── .gitignore
+│   ├── compiler.xml
+│   ├── jarRepositories.xml
+│   ├── misc.xml
+│   ├── vcs.xml
+│   └── workspace.xml
+├── .vscode/                        # VS Code configuration
+│   └── settings.json
+├── src/
+│   ├── main/
+│   │   ├── java/
+│   │   │   ├── Article.java        # Article data model with comparison methods
+│   │   │   ├── CSVReader.java      # Robust CSV parsing with error handling
+│   │   │   ├── Graphs.java         # JFreeChart visualization utilities
+│   │   │   ├── Main.java           # Main program with CLI and performance testing
+│   │   │   └── SearchAlgorithms.java # All four search algorithm implementations
+│   │   └── resources/
+│   │       └── Article.csv         # Dataset with 20,972+ academic articles
+│   └── test/
+│       └── java/
+│           └── TestAlgorithmRacePart2.java # Test class
+├── target/                         # Compiled classes and build artifacts
+│   ├── classes/
+│   │   ├── Article.class
+│   │   ├── Article.csv
+│   │   ├── CSVReader.class
+│   │   ├── Graphs.class
+│   │   ├── Main.class
+│   │   ├── Main$AlgorithmConfig.class
+│   │   ├── Main$AlgorithmStats.class
+│   │   ├── Main$SearchFunction.class
+│   │   └── SearchAlgorithms.class
+│   ├── generated-sources/
+│   │   └── annotations/
+│   └── test-classes/
+│       └── TestAlgorithmRacePart2.class
+├── pom.xml                         # Maven configuration file
+└── README.md                       # Project documentation
 ```
 
 ---
 
 ## 🛠️ Setup & Run
-
+### Method 1: GitHub
 ### 1. Clone repository
 ```bash
 git clone <your-repository-url>
@@ -56,6 +87,12 @@ javac -cp ".:jfreechart-*.jar" *.java
 ```bash
 java -cp ".:jfreechart-*.jar" Main
 ```
+### Method 2
+Clone the repository, and run:
+ - Main.java file for analysis
+ - Graphs.java for visual representations
+
+---
 
 - Interactive menu with 4 options appears
 - Choose individual search, algorithm race, or visualizations
