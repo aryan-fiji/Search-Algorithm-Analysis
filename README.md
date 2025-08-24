@@ -72,9 +72,14 @@ This project **implements and compares four different search algorithms** on aca
 
 ## 🛠️ Setup & Run
 ### Method 1: GitHub
+Download the project as a ZIP, unzip the folder, and run:
+ - Main.java file for analysis
+ - Graphs.java for visual representations
+
+### Method 2
 ### 1. Clone repository
 ```bash
-git clone <your-repository-url>
+git clone <>
 cd search-algorithms-assignment
 ```
 
@@ -87,11 +92,6 @@ javac -cp ".:jfreechart-*.jar" *.java
 ```bash
 java -cp ".:jfreechart-*.jar" Main
 ```
-### Method 2
-Clone the repository, and run:
- - Main.java file for analysis
- - Graphs.java for visual representations
-
 ---
 
 - Interactive menu with 4 options appears
@@ -212,5 +212,6 @@ Winner: Exponential Search on ArrayList (fastest overall)
 
 ---
 
-## ✨ Author
+## ✨ Authors
 - 👨‍💻 Aryan Singh (Chief Programmer)
+- 👨‍💻 Mohammed Suhail (Testing & Graphical Analyst)
