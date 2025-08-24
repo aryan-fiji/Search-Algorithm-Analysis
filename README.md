@@ -27,29 +27,29 @@ This project **implements and compares four different search algorithms** on aca
 
 ```
 .
-├── .idea/                          # IntelliJ IDEA configuration files
+├── .idea/                                  # IntelliJ IDEA configuration files
 │   ├── .gitignore
 │   ├── compiler.xml
 │   ├── jarRepositories.xml
 │   ├── misc.xml
 │   ├── vcs.xml
 │   └── workspace.xml
-├── .vscode/                        # VS Code configuration
+├── .vscode/                                # VS Code configuration
 │   └── settings.json
 ├── src/
 │   ├── main/
 │   │   ├── java/
-│   │   │   ├── Article.java        # Article data model with comparison methods
-│   │   │   ├── CSVReader.java      # Robust CSV parsing with error handling
-│   │   │   ├── Graphs.java         # JFreeChart visualization utilities
-│   │   │   ├── Main.java           # Main program with CLI and performance testing
-│   │   │   └── SearchAlgorithms.java # All four search algorithm implementations
+│   │   │   ├── Article.java                # Article data model with comparison methods
+│   │   │   ├── CSVReader.java              # Robust CSV parsing with error handling
+│   │   │   ├── Graphs.java                 # JFreeChart visualization utilities
+│   │   │   ├── Main.java                   # Main program with CLI and performance testing
+│   │   │   └── SearchAlgorithms.java       # All four search algorithm implementations
 │   │   └── resources/
-│   │       └── Article.csv         # Dataset with 20,972+ academic articles
+│   │       └── Article.csv                 # Dataset with 20,972+ academic articles
 │   └── test/
 │       └── java/
 │           └── TestAlgorithmRacePart2.java # Test class
-├── target/                         # Compiled classes and build artifacts
+├── target/                                 # Compiled classes and build artifacts
 │   ├── classes/
 │   │   ├── Article.class
 │   │   ├── Article.csv
@@ -64,8 +64,8 @@ This project **implements and compares four different search algorithms** on aca
 │   │   └── annotations/
 │   └── test-classes/
 │       └── TestAlgorithmRacePart2.class
-├── pom.xml                         # Maven configuration file
-└── README.md                       # Project documentation
+├── pom.xml                                  # Maven configuration file
+└── README.md                                # Project documentation
 ```
 
 ---
@@ -79,7 +79,7 @@ Download the project as a ZIP, unzip the folder, and run:
 ### Method 2
 ### 1. Clone repository
 ```bash
-git clone <>
+git clone <https://github.com/anishh-fiji/CS214-Assignment-1>
 cd search-algorithms-assignment
 ```
 
