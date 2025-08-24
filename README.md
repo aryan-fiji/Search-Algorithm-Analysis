@@ -32,8 +32,7 @@ This project **implements and compares four different search algorithms** on aca
 │   ├── compiler.xml
 │   ├── jarRepositories.xml
 │   ├── misc.xml
-│   ├── vcs.xml
-│   └── workspace.xml
+│   └── vcs.xml
 ├── .vscode/                                # VS Code configuration
 │   └── settings.json
 ├── src/
@@ -41,31 +40,25 @@ This project **implements and compares four different search algorithms** on aca
 │   │   ├── java/
 │   │   │   ├── Article.java                # Article data model with comparison methods
 │   │   │   ├── CSVReader.java              # Robust CSV parsing with error handling
-│   │   │   ├── Graphs.java                 # JFreeChart visualization utilities
 │   │   │   ├── Main.java                   # Main program with CLI and performance testing
 │   │   │   └── SearchAlgorithms.java       # All four search algorithm implementations
 │   │   └── resources/
 │   │       └── Article.csv                 # Dataset with 20,972+ academic articles
 │   └── test/
-│       └── java/
-│           └── TestAlgorithmRacePart2.java # Test class
 ├── target/                                 # Compiled classes and build artifacts
 │   ├── classes/
 │   │   ├── Article.class
 │   │   ├── Article.csv
 │   │   ├── CSVReader.class
-│   │   ├── Graphs.class
 │   │   ├── Main.class
 │   │   ├── Main$AlgorithmConfig.class
 │   │   ├── Main$AlgorithmStats.class
 │   │   ├── Main$SearchFunction.class
 │   │   └── SearchAlgorithms.class
-│   ├── generated-sources/
-│   │   └── annotations/
 │   └── test-classes/
 │       └── TestAlgorithmRacePart2.class
-├── pom.xml                                  # Maven configuration file
-└── README.md                                # Project documentation
+├── pom.xml                                 # Maven configuration file
+└── README.md                               # Project documentation
 ```
 
 ---
