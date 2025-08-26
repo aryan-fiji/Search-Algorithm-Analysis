@@ -146,6 +146,7 @@ The program generates **5 different performance charts**:
 - **Linear Search** on LinkedList slowest by massive margin
 
 ---
+**##📝 Assignment Task Mapping**
 | Assignment Task                                                                                        | Marks | Code Implementation                                                                                                                                                                                                                                                          |
 | ------------------------------------------------------------------------------------------------------ | ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **1. Implement 4 generic search algorithms for ArrayList & LinkedList**                                | 4%    | `SearchAlgorithms.java` contains **LinearSearch, BinarySearch, JumpSearch, ExponentialSearch**. Each algorithm is **generic**, working with any `Article` object. Implemented to handle both `ArrayList<Article>` and `LinkedList<Article>` in `Main.java`.                  |
