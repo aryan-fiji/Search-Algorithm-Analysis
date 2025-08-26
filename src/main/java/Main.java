@@ -192,15 +192,14 @@ class ConcurrentPerformanceAnalyzer implements PerformanceAnalyzer {
     @Override
     public void analyzeResults(Map<String, AlgorithmStats> results) {
         System.out.println("\n=== RACE RESULTS ===");
-        System.out.printf("%-25s %-8s %-8s %-8s %-8s %-8s%n", 
+        System.out.printf("%-30s %-10s %-10s %-10s %-8s %-8s%n", 
             "Algorithm", "Best(ms)", "Worst(ms)", "Mean(ms)", "Found", "Runs");
-        System.out.println("=".repeat(70));
-        
+        System.out.println("=".repeat(80));
         results.entrySet().stream()
             .sorted((e1, e2) -> Double.compare(e1.getValue().getMeanTime(), e2.getValue().getMeanTime()))
             .forEach(entry -> {
                 AlgorithmStats stats = entry.getValue();
-                System.out.printf("%-25s %-8.3f %-8.3f %-8.3f %-8d %-8d%n",
+                System.out.printf("%-30s %-10.3f %-10.3f %-10.3f %-8d %-8d%n",
                     entry.getKey(),
                     stats.getBestTime(),
                     stats.getWorstTime(),
@@ -457,7 +456,7 @@ class ConsoleUserInterface implements UserInterface {
 // Main application class
 public class Main {
     private static final int NUM_RUNS = 30;
-    private static final String CSV_FILE_PATH = "A1_S11230987_S11230995/src/main/resources/Article.csv";
+    private static final String CSV_FILE_PATH = "src/main/resources/Article.csv";
     
     // Core components
     private final UserInterface userInterface;

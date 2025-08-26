@@ -23,16 +23,14 @@
             <version>5.7.1</version>
         </dependency>
 
-        <!-- JFreeChart for plotting - Updated version -->
+        <!-- JFreeChart for plotting -->
         <dependency>
             <groupId>org.jfree</groupId>
             <artifactId>jfreechart</artifactId>
             <version>1.5.4</version>
         </dependency>
         
-        <!-- Remove JCommon - it's automatically included with JFreeChart 1.5.x -->
-        
-        <!-- JUnit for testing (optional but recommended) -->
+        <!-- JUnit for testing -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
