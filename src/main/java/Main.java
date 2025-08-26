@@ -3,7 +3,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.nio.file.Paths;
 import javax.swing.JFrame;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
@@ -458,7 +457,7 @@ class ConsoleUserInterface implements UserInterface {
 // Main application class
 public class Main {
     private static final int NUM_RUNS = 30;
-    private static final String CSV_FILE_PATH = Paths.get("src", "main", "resources", "Article.csv").toString();
+    private static final String CSV_FILE_PATH = "A1_S11230987_S11230995/src/main/resources/Article.csv";
     
     // Core components
     private final UserInterface userInterface;
