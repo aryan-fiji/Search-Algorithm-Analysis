@@ -138,6 +138,14 @@ The program generates **5 different performance charts**:
 - **Linear Search** on LinkedList slowest by massive margin
 
 ---
+| Assignment Task                                                                                        | Marks | Code Implementation                                                                                                                                                                                                                                                          |
+| ------------------------------------------------------------------------------------------------------ | ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **1. Implement 4 generic search algorithms for ArrayList & LinkedList**                                | 4%    | `SearchAlgorithms.java` contains **LinearSearch, BinarySearch, JumpSearch, ExponentialSearch**. Each algorithm is **generic**, working with any `Article` object. Implemented to handle both `ArrayList<Article>` and `LinkedList<Article>` in `Main.java`.                  |
+| **2. Race all algorithms on random test cases simultaneously**                                         | 5%    | `Main.java` contains the **algorithm race logic** using **multi-threading** (`ExecutorService`) to benchmark all 8 combinations (4 algorithms × 2 data structures). Results are stored in `Main$AlgorithmStats`.                                                             |
+| **3. Run 30 trials with random keys, including missing keys, and analyze best/mean/worst performance** | 5%    | The **race feature in `Main.java`** runs each algorithm **30 times** with random keys (some missing). Uses counters to track **best, mean, and worst execution times**. Analysis is printed in console tables and stored for visualization.                                  |
+| **4. Determine worst-case time complexity graphically**                                                | 6%    | **Visualization module** (via JFreeChart or MATLAB commands in Java) generates **5 charts**, including complexity analysis, data structure comparison, and theoretical vs empirical trends. Relevant methods: `Main.generateCharts()`, `ChartBuilder.java` (if implemented). |
+
+---
 
 ## 🔧 Interactive Features
 
