@@ -64,15 +64,23 @@ This project **implements and compares four different search algorithms** on aca
 ---
 
 ## 🛠️ Setup & Run
-### Method 1: GitHub
+### Method 1: Local Project File
 Download the project as a ZIP, unzip the folder, and run:
- - Main.java file for analysis
- - Graphs.java for visual representations
+ - The Main.java file
+   
+Once the program starts, you should see these 5 options:
+1. Search article using ID
+2. Race all search algorithms (30 runs)
+3. Generate performance visualization graphs
+4. Show theoretical complexity curves
+5. End program
 
-### Method 2
+✅ If all files are compiled and CSV dataset is in the right location (src/main/resources/Article.csv), these options should appear without errors.
+
+### Method 2: Using GitHub
 ### 1. Clone repository
 ```bash
-git clone <https://github.com/anishh-fiji/CS214-Assignment-1>
+git clone <https://github.com/aryan-fiji/CS214-Assignment-1>
 cd search-algorithms-assignment
 ```
 
@@ -87,7 +95,7 @@ java -cp ".:jfreechart-*.jar" Main
 ```
 ---
 
-- Interactive menu with 4 options appears
+- Interactive menu with 5 options appears
 - Choose individual search, algorithm race, or visualizations
 - Multiple performance charts will be generated
 
@@ -139,6 +147,17 @@ The program generates **5 different performance charts**:
 
 ---
 
+## 📊 Assignment Task Mapping
+
+| Assignment Task                                                                                        | Marks | Code Implementation                                                                                                                                                                                                                                                          |
+| ------------------------------------------------------------------------------------------------------ | ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **1. Implement 4 generic search algorithms for ArrayList & LinkedList**                                | 4%    | `SearchAlgorithms.java` contains **LinearSearch, BinarySearch, JumpSearch, ExponentialSearch**. Each algorithm is **generic**, working with any `Article` object. Implemented to handle both `ArrayList<Article>` and `LinkedList<Article>` in `Main.java`.                  |
+| **2. Race all algorithms on random test cases simultaneously**                                         | 5%    | `Main.java` contains the **algorithm race logic** using **multi-threading** (`ExecutorService`) to benchmark all 8 combinations (4 algorithms × 2 data structures). Results are stored in `Main$AlgorithmStats`.                                                             |
+| **3. Run 30 trials with random keys, including missing keys, and analyze best/mean/worst performance** | 5%    | The **race feature in `Main.java`** runs each algorithm **30 times** with random keys (some missing). Uses counters to track **best, mean, and worst execution times**. Analysis is printed in console tables and stored for visualization.                                  |
+| **4. Determine worst-case time complexity graphically**                                                | 6%    | **Visualization module** (via JFreeChart or MATLAB commands in Java) generates **5 charts**, including complexity analysis, data structure comparison, and theoretical vs empirical trends. Relevant methods: `Main.generateCharts()`, `ChartBuilder.java` (if implemented). |
+
+---
+
 ## 🔧 Interactive Features
 
 ### Menu Options:
@@ -155,10 +174,12 @@ The program generates **5 different performance charts**:
 
 3. **Performance Visualizations** 
    - Generate all 5 chart types
-   - Visual complexity analysis
    - Empirical vs theoretical comparison
 
-4. **Exit Program**
+4. **Complexity Graphs** 
+   - Visual complexity analysis
+     
+5. **Exit Program**
 
 ---
 
