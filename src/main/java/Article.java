@@ -7,9 +7,8 @@ public class Article implements Comparable<Article> {
     private int computerScience, physics, mathematics, statistics, quantitativeBiology, quantitativeFinance;
 
     // Constructors
-    public Article(String id, String title, String abstractText,
-                   int computerScience, int physics, int mathematics, int statistics,
-                   int quantitativeBiology, int quantitativeFinance) {
+    public Article(String id, String title, String abstractText,int computerScience, int physics, 
+                    int mathematics, int statistics, int quantitativeBiology, int quantitativeFinance) {
         this.id = id;
         this.title = title;
         this.abstractText = abstractText;
@@ -95,17 +94,17 @@ public class Article implements Comparable<Article> {
         this.quantitativeFinance = quantitativeFinance;
     }
 
-    // Sort articles by ID
+    // Sort articles by their ID
     @Override
     public int compareTo(Article other) {
         if (other == null) return 1;
-        return this.id.compareTo(other.id);
+            return this.id.compareTo(other.id);
     }
     
     // Compare based on ID only for search operations
     public int compareTo(String otherId) {
         if (otherId == null) return 1;
-        return this.id.compareTo(otherId);
+            return this.id.compareTo(otherId);
     }
 
     // Two articles are equal if they have same ID
@@ -121,13 +120,13 @@ public class Article implements Comparable<Article> {
         return Objects.equals(id, article.id);
     }
 
-    // Hash based on ID for consistency with equals
+    // Hash based on ID for consistency
     @Override
     public int hashCode() {
         return Objects.hash(id);
     }
 
-    // String representation for debugging
+    // debug representation for strings
     @Override
     public String toString() {
         return "ID: " + id + 
@@ -140,7 +139,7 @@ public class Article implements Comparable<Article> {
                ", QuantFin: " + quantitativeFinance + "]";
     }
 
-    //Checks if this article matches a given ID
+    // Checks if this article matches a given ID
     public boolean matchesId(String searchId) {
         return this.id.equals(searchId);
     }

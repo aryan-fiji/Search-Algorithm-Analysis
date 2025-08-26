@@ -8,9 +8,7 @@ public class CSVReader {
     public static List<Article> readCSV(String filePath) {
         List<Article> articles = new ArrayList<>();
         
-        try (BufferedReader br = new BufferedReader(
-                new InputStreamReader(new FileInputStream(filePath), StandardCharsets.UTF_8))) {
-            
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(filePath), StandardCharsets.UTF_8))) {
             String line;
             boolean isFirstLine = true;
             int lineNumber = 0;
@@ -59,7 +57,6 @@ public class CSVReader {
                                 System.out.println("Processed " + successfulReads + " articles...");
                             }
                         }
-
                     } 
                     
                     catch (Exception e) {
@@ -91,18 +88,14 @@ public class CSVReader {
                     errors++;
                 }
             }
-            
             System.out.println("\nCSV Reading Summary:");
             System.out.println("Successfully loaded articles: " + successfulReads);
             System.out.println("Errors encountered: " + errors);
-            
         } 
-        
         catch (FileNotFoundException e) {
             System.err.println("Error: CSV file not found at path: " + filePath);
             System.err.println("Please check the file path and ensure the file exists.");
         } 
-        
         catch (IOException e) {
             System.err.println("Error reading CSV file: " + e.getMessage());
         }
@@ -114,14 +107,12 @@ public class CSVReader {
         if (line == null || line.trim().isEmpty()) {
             return null;
         }
-        
-        List<String> fields = parseCSVFields(line);
-        
+
         //Expected header fields from csv file
+        List<String> fields = parseCSVFields(line);
         if (fields.size() < 9) {
-            throw new IllegalArgumentException("Insufficient fields. Expected 9, got " + fields.size());
+            throw new IllegalArgumentException("Insufficient fields. Expected: 9, Received: " + fields.size());
         }
-        
         try {
             String id = cleanField(fields.get(0));
             String title = cleanField(fields.get(1));
@@ -183,17 +174,14 @@ public class CSVReader {
                 currentField.append(c);
             }
         }
-        
         // Add the last field
         fields.add(currentField.toString().trim());
-
         return fields;
     }
     
     //Cleans a field by removing surrounding quotes and handling whitespace
     private static String cleanField(String field) {
         if (field == null) return "";
-        
         field = field.trim();
         
         // Remove surrounding quotes if present
@@ -205,7 +193,6 @@ public class CSVReader {
         
         // Clean up any remaining whitespace issues from multiline records
         field = field.replaceAll("\\s+", " ").trim();
-        
         return field;
     }
     
@@ -214,7 +201,6 @@ public class CSVReader {
         if (field == null || field.trim().isEmpty()) {
             return 0;
         }
-        
         field = cleanField(field);
         
         try {
@@ -270,10 +256,7 @@ public class CSVReader {
         }
     }
     
-    /**
-     * Gets basic statistics about the CSV file
-     * @param filePath Path to the CSV file
-     */
+    //Prints stats about the CSV file
     public static void printCSVStats(String filePath) {
         try (BufferedReader br = new BufferedReader(
                 new InputStreamReader(new FileInputStream(filePath), StandardCharsets.UTF_8))) {
@@ -284,13 +267,13 @@ public class CSVReader {
             while ((br.readLine()) != null) {
                 lineCount++;
             }
-            
+
             System.out.println("\nCSV File Statistics:");
             System.out.println("File path: " + filePath);
             System.out.println("File size: " + formatFileSize(fileSize));
             System.out.println("Total lines: " + lineCount);
             System.out.println("Data rows (excluding header): " + (lineCount - 1));
-            
+
         } catch (IOException e) {
             System.err.println("Error reading CSV statistics: " + e.getMessage());
         }
