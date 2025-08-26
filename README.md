@@ -80,7 +80,7 @@ Once the program starts, you should see these 5 options:
 ### Method 2: Using GitHub
 ### 1. Clone repository
 ```bash
-git clone <https://github.com/anishh-fiji/CS214-Assignment-1>
+git clone <https://github.com/aryan-fiji/CS214-Assignment-1>
 cd search-algorithms-assignment
 ```
 
@@ -95,7 +95,7 @@ java -cp ".:jfreechart-*.jar" Main
 ```
 ---
 
-- Interactive menu with 4 options appears
+- Interactive menu with 5 options appears
 - Choose individual search, algorithm race, or visualizations
 - Multiple performance charts will be generated
 
