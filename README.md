@@ -64,12 +64,20 @@ This project **implements and compares four different search algorithms** on aca
 ---
 
 ## 🛠️ Setup & Run
-### Method 1: GitHub
+### Method 1: Local Project File
 Download the project as a ZIP, unzip the folder, and run:
- - Main.java file for analysis
- - Graphs.java for visual representations
+ - The Main.java file
+   
+Once the program starts, you should see these 5 options:
+1. Search article using ID
+2. Race all search algorithms (30 runs)
+3. Generate performance visualization graphs
+4. Show theoretical complexity curves
+5. End program
 
-### Method 2
+✅ If all files are compiled and CSV dataset is in the right location (src/main/resources/Article.csv), these options should appear without errors.
+
+### Method 2: Using GitHub
 ### 1. Clone repository
 ```bash
 git clone <https://github.com/anishh-fiji/CS214-Assignment-1>
