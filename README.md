@@ -174,10 +174,12 @@ The program generates **5 different performance charts**:
 
 3. **Performance Visualizations** 
    - Generate all 5 chart types
-   - Visual complexity analysis
    - Empirical vs theoretical comparison
 
-4. **Exit Program**
+4. **Complexity Graphs** 
+   - Visual complexity analysis
+     
+5. **Exit Program**
 
 ---
 
