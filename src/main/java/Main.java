@@ -6,183 +6,176 @@ import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.data.category.DefaultCategoryDataset;
 
-public class Main {
-    private static final int NUM_RUNS = 30;
-    private static final Random random = new Random();
+// Core interfaces
+interface SearchAlgorithm<T> {
+    int search(List<T> list, String key);
+    String getName();
+    String getComplexity();
+}
+
+interface DataStructureProvider<T> {
+    List<T> getList();
+    String getName();
+    boolean isOptimalForRandomAccess();
+}
+
+interface PerformanceAnalyzer {
+    Map<String, AlgorithmStats> runPerformanceTest(List<DataStructureProvider<Article>> dataProviders, 
+        List<SearchAlgorithm<Article>> algorithms, List<String> testKeys);
+    void analyzeResults(Map<String, AlgorithmStats> results);
+}
+
+interface ChartGenerator {
+    void generateAllCharts(Map<String, AlgorithmStats> performanceData, int dataSize);
+    void showChart(JFreeChart chart, String title);
+}
+
+interface UserInterface {
+    void displayMainMenu();
+    int getMenuChoice();
+    void handleArticleSearch(List<DataStructureProvider<Article>> dataProviders, 
+                           List<SearchAlgorithm<Article>> algorithms);
+}
+
+// Search algorithm implementations using existing SearchAlgorithms class
+class LinearSearchAdapter implements SearchAlgorithm<Article> {
+    @Override
+    public int search(List<Article> list, String key) {
+        return SearchAlgorithms.linearSearch(list, key);
+    }
     
-    public static void main(String[] args) {
-        List<Article> csvData = CSVReader.readCSV("src\\main\\resources\\Article.csv");
-        if (csvData.isEmpty()) {
-            System.out.println("No data found in CSV file or file not found.");
-            return;
-        }
-        
-        // Create both ArrayList and LinkedList from the same data
-        ArrayList<Article> arrayList = new ArrayList<>(csvData);
-        LinkedList<Article> linkedList = new LinkedList<>(csvData);
-        
-        // Sort both lists by ID for algorithms that require sorted data
-        arrayList.sort(Comparator.comparing(Article::getId));
-        linkedList.sort(Comparator.comparing(Article::getId));
+    @Override
+    public String getName() { return "Linear Search"; }
+    
+    @Override
+    public String getComplexity() { return "O(n)"; }
+}
 
-        System.out.println("Total articles loaded: " + arrayList.size());
-        
-        Scanner scanner = new Scanner(System.in);
-        while (true) {
-            System.out.println("\nChoose an option:");
-            System.out.println("1. Search article using ID");
-            System.out.println("2. Race all search algorithms (30 runs)");
-            System.out.println("3. Generate performance visualization graphs");
-            System.out.println("4. Show theoretical complexity curves");
-            System.out.println("5. Run integer array algorithm race");
-            System.out.println("6. End program");
-            System.out.print("Enter choice: ");
-            String choice = scanner.nextLine().trim();
-
-            switch (choice) {
-                case "1":
-                    handleArticleSearch(scanner, arrayList, linkedList);
-                    break;
-                case "2":
-                    raceAllAlgorithms(arrayList, linkedList);
-                    break;
-                case "3":
-                    System.out.println("Generating performance visualizations...");
-                    Map<String, AlgorithmStats> raceResults = raceAllAlgorithms(arrayList, linkedList);
-                    generateAllVisualizations(raceResults, arrayList, linkedList);
-                    break;
-                case "4":
-                    part4_theory();
-                    break;
-                case "5":
-                    part2_race();
-                    break;
-                case "6":
-                    System.out.println("Program ended.");
-                    scanner.close();
-                    return;
-                default:
-                    System.out.println("Invalid choice. Try again.");
-            }
-        }
+class BinarySearchAdapter implements SearchAlgorithm<Article> {
+    @Override
+    public int search(List<Article> list, String key) {
+        return SearchAlgorithms.binarySearch(list, key);
     }
+    
+    @Override
+    public String getName() { return "Binary Search"; }
+    
+    @Override
+    public String getComplexity() { return "O(log n)"; }
+}
 
-    private static void handleArticleSearch(Scanner scanner, ArrayList<Article> arrayList, LinkedList<Article> linkedList) {
-        System.out.print("Enter ID: ");
-        String id = scanner.nextLine().trim();
-        
-        int algorithmChoice = displayAlgorithmMenu(scanner);
-        if (algorithmChoice == -1) return;
-        
-        int dataStructureChoice = displayDataStructureMenu(scanner);
-        if (dataStructureChoice == -1) return;
-
-        long startTime = System.nanoTime();
-        Article result = null;
-        int index = -1;
-        
-        List<Article> searchList = dataStructureChoice == 1 ? arrayList : linkedList;
-        
-        switch (algorithmChoice) {
-            case 1: // Linear Search
-                index = SearchAlgorithms.linearSearch(searchList, id);
-                break;
-
-            case 2: // Binary Search
-                index = SearchAlgorithms.binarySearch(searchList, id);
-                break;
-
-            case 3: // Jump Search
-                index = SearchAlgorithms.jumpSearch(searchList, id);
-                break;
-
-            case 4: // Exponential Search
-                index = SearchAlgorithms.exponentialSearch(searchList, id);
-                break;
-        }
-
-        if (index != -1) {
-            result = searchList.get(index);
-        }
-        
-        long endTime = System.nanoTime();
-        double timeInSeconds = (endTime - startTime) / 1_000_000_000.0;
-        
-        String algorithmName = getAlgorithmName(algorithmChoice);
-        String dataStructureName = dataStructureChoice == 1 ? "ArrayList" : "LinkedList";
-        
-        if (result != null) {
-            System.out.println("\nArticle found using " + algorithmName + " on " + dataStructureName + ":");
-            System.out.println(result);
-            System.out.printf("Search completed in: %.9f seconds\n", timeInSeconds);
-        } else {
-            System.out.println("Error: Article not found using " + algorithmName + " on " + dataStructureName + ".");
-            System.out.printf("Search completed in: %.9f seconds\n", timeInSeconds);
-        }
-        
-        // Performance warning for LinkedList with non-linear algorithms
-        if (dataStructureChoice == 2 && algorithmChoice > 1) {
-            System.out.println("\nPerformance Note: " + algorithmName + 
-                " on LinkedList is inefficient due to O(n) random access time.");
-            System.out.println("Consider using ArrayList for better performance with " + algorithmName + ".");
-        }
+class JumpSearchAdapter implements SearchAlgorithm<Article> {
+    @Override
+    public int search(List<Article> list, String key) {
+        return SearchAlgorithms.jumpSearch(list, key);
     }
+    
+    @Override
+    public String getName() { return "Jump Search"; }
+    
+    @Override
+    public String getComplexity() { return "O(√n)"; }
+}
 
-    public static Map<String, AlgorithmStats> raceAllAlgorithms(ArrayList<Article> arrayList, LinkedList<Article> linkedList) {
+class ExponentialSearchAdapter implements SearchAlgorithm<Article> {
+    @Override
+    public int search(List<Article> list, String key) {
+        return SearchAlgorithms.exponentialSearch(list, key);
+    }
+    
+    @Override
+    public String getName() { return "Exponential Search"; }
+    
+    @Override
+    public String getComplexity() { return "O(log n)"; }
+}
+
+// Data structure provider implementations
+class ArrayListProvider<T> implements DataStructureProvider<T> {
+    private final List<T> list;
+    
+    public ArrayListProvider(List<T> sourceData) {
+        this.list = new ArrayList<>(sourceData);
+    }
+    
+    @Override
+    public List<T> getList() { return list; }
+    
+    @Override
+    public String getName() { return "ArrayList"; }
+    
+    @Override
+    public boolean isOptimalForRandomAccess() { return true; }
+}
+
+class LinkedListProvider<T> implements DataStructureProvider<T> {
+    private final List<T> list;
+    
+    public LinkedListProvider(List<T> sourceData) {
+        this.list = new LinkedList<>(sourceData);
+    }
+    
+    @Override
+    public List<T> getList() { return list; }
+    
+    @Override
+    public String getName() { return "LinkedList"; }
+    
+    @Override
+    public boolean isOptimalForRandomAccess() { return false; }
+}
+
+// Performance analyzer implementation
+class ConcurrentPerformanceAnalyzer implements PerformanceAnalyzer {
+    private static final int NUM_RUNS = 30;
+    
+    @Override
+    public Map<String, AlgorithmStats> runPerformanceTest(List<DataStructureProvider<Article>> dataProviders,
+                                                          List<SearchAlgorithm<Article>> algorithms,
+                                                          List<String> testKeys) {
         System.out.println("\n=== SEARCH ALGORITHMS RACE(" + NUM_RUNS + " RUNS - ALL ALGORITHMS) ===");
         
-        // Prepare test keys (mix of existing and non-existing IDs)
-        List<String> testKeys = prepareTestKeys(arrayList, NUM_RUNS);
-        
-        // Result trackers for each algorithm
         Map<String, AlgorithmStats> statsMap = new ConcurrentHashMap<>();
-        
-        // Define all algorithm combinations to test
-        List<AlgorithmConfig> algorithms = Arrays.asList(
-            new AlgorithmConfig("Linear - ArrayList", (list, key) -> SearchAlgorithms.linearSearch(list, key)),
-            new AlgorithmConfig("Linear - LinkedList", (list, key) -> SearchAlgorithms.linearSearch(list, key)),
-            new AlgorithmConfig("Binary - ArrayList", (list, key) -> SearchAlgorithms.binarySearch(list, key)),
-            new AlgorithmConfig("Binary - LinkedList", (list, key) -> SearchAlgorithms.binarySearch(list, key)),
-            new AlgorithmConfig("Jump - ArrayList", (list, key) -> SearchAlgorithms.jumpSearch(list, key)),
-            new AlgorithmConfig("Jump - LinkedList", (list, key) -> SearchAlgorithms.jumpSearch(list, key)),
-            new AlgorithmConfig("Exponential - ArrayList", (list, key) -> SearchAlgorithms.exponentialSearch(list, key)),
-            new AlgorithmConfig("Exponential - LinkedList", (list, key) -> SearchAlgorithms.exponentialSearch(list, key))
-        );      
-
-        for (AlgorithmConfig algo : algorithms) {
-            statsMap.put(algo.name, new AlgorithmStats());
-        }
-        
         ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         List<Future<?>> futures = new ArrayList<>();
         
-        for (int run = 0; run < NUM_RUNS; run++) {
-            final String currentKey = testKeys.get(run);
-            final int currentRun = run;
-            
-            for (AlgorithmConfig algo : algorithms) {
-                futures.add(executor.submit(() -> {
-                    long startTime = System.nanoTime();
-                    boolean found = false;
-                    
-                    try {
-                        if (algo.name.contains("ArrayList")) {
-                            found = algo.searchFunction.search(arrayList, currentKey) != -1;
-                        } else {
-                            found = algo.searchFunction.search(linkedList, currentKey) != -1;
-                        }
-                    } catch (Exception e) {
-                        System.err.println("Error in " + algo.name + ": " + e.getMessage());
-                    }
-                    
-                    long endTime = System.nanoTime();
-                    double timeTaken = (endTime - startTime) / 1_000_000.0; // milliseconds
-                    
-                    statsMap.get(algo.name).addResult(timeTaken, found, currentRun);
-                }));
+        // Initialize stats for all combinations
+        for (DataStructureProvider<Article> provider : dataProviders) {
+            for (SearchAlgorithm<Article> algorithm : algorithms) {
+                String key = algorithm.getName() + " - " + provider.getName();
+                statsMap.put(key, new AlgorithmStats());
             }
         }
         
+        // Run performance tests
+        for (int run = 0; run < testKeys.size() && run < NUM_RUNS; run++) {
+            final String currentKey = testKeys.get(run);
+            final int currentRun = run;
+            
+            for (DataStructureProvider<Article> provider : dataProviders) {
+                for (SearchAlgorithm<Article> algorithm : algorithms) {
+                    futures.add(executor.submit(() -> {
+                        String statsKey = algorithm.getName() + " - " + provider.getName();
+                        
+                        long startTime = System.nanoTime();
+                        boolean found = false;
+                        
+                        try {
+                            int result = algorithm.search(provider.getList(), currentKey);
+                            found = result != -1;
+                        } catch (Exception e) {
+                            System.err.println("Error in " + statsKey + ": " + e.getMessage());
+                        }
+                        
+                        long endTime = System.nanoTime();
+                        double timeTaken = (endTime - startTime) / 1_000_000.0; // milliseconds
+                        statsMap.get(statsKey).addResult(timeTaken, found, currentRun);
+                    }));
+                }
+            }
+        }
+        
+        // Wait for all tasks to complete
         for (Future<?> future : futures) {
             try {
                 future.get();
@@ -192,13 +185,17 @@ public class Main {
         }
         
         executor.shutdown();
-        
+        return statsMap;
+    }
+    
+    @Override
+    public void analyzeResults(Map<String, AlgorithmStats> results) {
         System.out.println("\n=== RACE RESULTS ===");
         System.out.printf("%-25s %-8s %-8s %-8s %-8s %-8s%n", 
             "Algorithm", "Best(ms)", "Worst(ms)", "Mean(ms)", "Found", "Runs");
         System.out.println("=".repeat(70));
         
-        statsMap.entrySet().stream()
+        results.entrySet().stream()
             .sorted((e1, e2) -> Double.compare(e1.getValue().getMeanTime(), e2.getValue().getMeanTime()))
             .forEach(entry -> {
                 AlgorithmStats stats = entry.getValue();
@@ -211,21 +208,18 @@ public class Main {
                     stats.getTotalRuns());
             });
         
-        // Performance analysis
-        System.out.println("\n=== PERFORMANCE ANALYSIS ===");
-        analyzeLinkedListPerformance(statsMap);
-        
-        return statsMap;
+        analyzeDataStructurePerformance(results);
     }
-
-    private static void analyzeLinkedListPerformance(Map<String, AlgorithmStats> statsMap) {
-        System.out.println("\nLinkedList Performance Analysis:");
+    
+    private void analyzeDataStructurePerformance(Map<String, AlgorithmStats> statsMap) {
+        System.out.println("\n=== PERFORMANCE ANALYSIS ===");
+        System.out.println("LinkedList Performance Analysis:");
         System.out.println("- Linear Search: Optimal for LinkedList (sequential access)");
         System.out.println("- Binary/Jump/Exponential Search: Poor performance due to O(n) random access");
         System.out.println("- ArrayList is recommended for algorithms requiring random access");
         
         // Compare same algorithm performance between data structures
-        String[] algorithms = {"Linear", "Binary", "Jump", "Exponential"};
+        String[] algorithms = {"Linear Search", "Binary Search", "Jump Search", "Exponential Search"};
         for (String algo : algorithms) {
             AlgorithmStats arrayStats = statsMap.get(algo + " - ArrayList");
             AlgorithmStats linkedStats = statsMap.get(algo + " - LinkedList");
@@ -236,32 +230,27 @@ public class Main {
             }
         }
     }
+}
 
-    // ========== GRAPH GENERATION METHODS (formerly in Graphs.java) ==========
-    
-    // Main method to generate all visualizations from actual performance data
-    public static void generateAllVisualizations(Map<String, AlgorithmStats> performanceData, 
-                                                ArrayList<Article> arrayList, LinkedList<Article> linkedList) {
+// Chart generator implementation
+class JFreeChartGenerator implements ChartGenerator {
+    @Override
+    public void generateAllCharts(Map<String, AlgorithmStats> performanceData, int dataSize) {
         System.out.println("Generating performance visualizations...");
         
         try {
-            // 1. Race Results - Mean Time Comparison
             generateRaceChart(performanceData);
             Thread.sleep(1000);
             
-            // 2. Best/Mean/Worst Analysis
             generateBestMeanWorstChart(performanceData);
             Thread.sleep(1000);
             
-            // 3. ArrayList vs LinkedList Comparison
             generateDataStructureComparisonChart(performanceData);
             Thread.sleep(1000);
             
-            // 4. Theoretical vs Empirical Complexity
-            generateComplexityAnalysisChart(performanceData, arrayList.size());
+            generateComplexityAnalysisChart(performanceData, dataSize);
             Thread.sleep(1000);
             
-            // 5. Algorithm Performance by Data Structure
             generateAlgorithmByDataStructureChart(performanceData);
             
             System.out.println("All visualizations generated successfully!");
@@ -270,12 +259,10 @@ public class Main {
             System.err.println("Visualization interrupted: " + e.getMessage());
         }
     }
-
-    // 1. Race Results - Show mean performance of all algorithm/data structure combinations
-    private static void generateRaceChart(Map<String, AlgorithmStats> performanceData) {
+    
+    private void generateRaceChart(Map<String, AlgorithmStats> performanceData) {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
         
-        // Sort by mean time for better visualization
         performanceData.entrySet().stream()
             .sorted((e1, e2) -> Double.compare(e1.getValue().getMeanTime(), e2.getValue().getMeanTime()))
             .forEach(entry -> {
@@ -289,12 +276,10 @@ public class Main {
             "Mean Time (milliseconds)",
             dataset
         );
-        
         showChart(chart, "Race Results - Mean Performance");
     }
-
-    // 2. Best/Mean/Worst case analysis for each algorithm
-    private static void generateBestMeanWorstChart(Map<String, AlgorithmStats> performanceData) {
+    
+    private void generateBestMeanWorstChart(Map<String, AlgorithmStats> performanceData) {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
         
         performanceData.forEach((algorithmName, stats) -> {
@@ -309,23 +294,21 @@ public class Main {
             "Execution Time (milliseconds)",
             dataset
         );
-        
         showChart(chart, "Best/Mean/Worst Case Analysis");
     }
-
-    // 3. ArrayList vs LinkedList performance comparison
-    private static void generateDataStructureComparisonChart(Map<String, AlgorithmStats> performanceData) {
+    
+    private void generateDataStructureComparisonChart(Map<String, AlgorithmStats> performanceData) {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
         
-        String[] algorithms = {"Linear", "Binary", "Jump", "Exponential"};
+        String[] algorithms = {"Linear Search", "Binary Search", "Jump Search", "Exponential Search"};
         
         for (String algo : algorithms) {
             AlgorithmStats arrayStats = performanceData.get(algo + " - ArrayList");
             AlgorithmStats linkedStats = performanceData.get(algo + " - LinkedList");
             
             if (arrayStats != null && linkedStats != null) {
-                dataset.addValue(arrayStats.getMeanTime(), "ArrayList", algo);
-                dataset.addValue(linkedStats.getMeanTime(), "LinkedList", algo);
+                dataset.addValue(arrayStats.getMeanTime(), "ArrayList", algo.replace(" Search", ""));
+                dataset.addValue(linkedStats.getMeanTime(), "LinkedList", algo.replace(" Search", ""));
             }
         }
 
@@ -338,25 +321,22 @@ public class Main {
         
         showChart(chart, "Data Structure Comparison");
     }
-
-    // 4. Theoretical complexity vs empirical results
-    private static void generateComplexityAnalysisChart(Map<String, AlgorithmStats> performanceData, int dataSize) {
+    
+    private void generateComplexityAnalysisChart(Map<String, AlgorithmStats> performanceData, int dataSize) {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
         
-        // Theoretical complexities (normalized for visualization)
-        double scaleFactor = 0.001; // Scale theoretical values to match empirical scale
+        double scaleFactor = 0.001;
         
         dataset.addValue(dataSize * scaleFactor, "Linear O(n) - Theoretical", "Linear");
         dataset.addValue(Math.log(dataSize) / Math.log(2) * scaleFactor * 10, "Binary O(log n) - Theoretical", "Binary");
         dataset.addValue(Math.sqrt(dataSize) * scaleFactor * 5, "Jump O(√n) - Theoretical", "Jump");
         dataset.addValue(Math.log(dataSize) / Math.log(2) * scaleFactor * 10, "Exponential O(log n) - Theoretical", "Exponential");
         
-        // Empirical results (ArrayList only for fair comparison)
-        String[] algorithms = {"Linear", "Binary", "Jump", "Exponential"};
+        String[] algorithms = {"Linear Search", "Binary Search", "Jump Search", "Exponential Search"};
         for (String algo : algorithms) {
             AlgorithmStats stats = performanceData.get(algo + " - ArrayList");
             if (stats != null) {
-                dataset.addValue(stats.getMeanTime(), algo + " - Empirical", algo);
+                dataset.addValue(stats.getMeanTime(), algo.replace(" Search", "") + " - Empirical", algo.replace(" Search", ""));
             }
         }
 
@@ -369,17 +349,17 @@ public class Main {
         
         showChart(chart, "Complexity Analysis");
     }
-
-    // 5. Performance breakdown by algorithm, grouped by data structure
-    private static void generateAlgorithmByDataStructureChart(Map<String, AlgorithmStats> performanceData) {
+    
+    private void generateAlgorithmByDataStructureChart(Map<String, AlgorithmStats> performanceData) {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
         
         performanceData.forEach((key, stats) -> {
             String[] parts = key.split(" - ");
-            String algorithm = parts[0];
-            String dataStructure = parts[1];
-            
-            dataset.addValue(stats.getMeanTime(), dataStructure, algorithm);
+            if (parts.length == 2) {
+                String algorithm = parts[0];
+                String dataStructure = parts[1];
+                dataset.addValue(stats.getMeanTime(), dataStructure, algorithm.replace(" Search", ""));
+            }
         });
 
         JFreeChart chart = ChartFactory.createLineChart(
@@ -391,9 +371,9 @@ public class Main {
         
         showChart(chart, "Algorithm Performance Trends");
     }
-
-    // Utility method to show charts
-    public static void showChart(JFreeChart chart, String title) {
+    
+    @Override
+    public void showChart(JFreeChart chart, String title) {
         JFrame frame = new JFrame(title);
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.setContentPane(new ChartPanel(chart));
@@ -403,11 +383,231 @@ public class Main {
         
         System.out.println("Chart displayed: " + title);
     }
+}
 
-    // ========== LEGACY GRAPH METHODS (from original Graphs.java standalone execution) ==========
+// User interface implementation
+class ConsoleUserInterface implements UserInterface {
+    private final Scanner scanner;
     
-    // Legacy methods for backward compatibility and additional analysis
-    public static void part2_race() {
+    public ConsoleUserInterface() {
+        this.scanner = new Scanner(System.in);
+    }
+    
+    @Override
+    public void displayMainMenu() {
+        System.out.println("\nChoose an option:");
+        System.out.println("1. Search article using ID");
+        System.out.println("2. Race all search algorithms (30 runs)");
+        System.out.println("3. Generate performance visualization graphs");
+        System.out.println("4. Show theoretical complexity curves");
+        System.out.println("5. Run integer array algorithm race");
+        System.out.println("6. End program");
+        System.out.print("Enter choice: ");
+    }
+    
+    @Override
+    public int getMenuChoice() {
+        try {
+            return Integer.parseInt(scanner.nextLine().trim());
+        } catch (NumberFormatException e) {
+            return -1;
+        }
+    }
+    
+    @Override
+    public void handleArticleSearch(List<DataStructureProvider<Article>> dataProviders, 
+                                  List<SearchAlgorithm<Article>> algorithms) {
+        System.out.print("Enter ID: ");
+        String id = scanner.nextLine().trim();
+        
+        int algorithmChoice = displayAlgorithmMenu();
+        if (algorithmChoice == -1) return;
+        
+        int dataStructureChoice = displayDataStructureMenu();
+        if (dataStructureChoice == -1) return;
+        
+        SearchAlgorithm<Article> selectedAlgorithm = algorithms.get(algorithmChoice - 1);
+        DataStructureProvider<Article> selectedProvider = dataProviders.get(dataStructureChoice - 1);
+        
+        long startTime = System.nanoTime();
+        int index = selectedAlgorithm.search(selectedProvider.getList(), id);
+        long endTime = System.nanoTime();
+        double timeInSeconds = (endTime - startTime) / 1_000_000_000.0;
+        
+        if (index != -1) {
+            Article result = selectedProvider.getList().get(index);
+            System.out.println("\nArticle found using " + selectedAlgorithm.getName() + " on " + selectedProvider.getName() + ":");
+            System.out.println(result);
+            System.out.printf("Search completed in: %.9f seconds\n", timeInSeconds);
+        } else {
+            System.out.println("Error: Article not found using " + selectedAlgorithm.getName() + " on " + selectedProvider.getName() + ".");
+            System.out.printf("Search completed in: %.9f seconds\n", timeInSeconds);
+        }
+        
+        // Performance warning for LinkedList with non-linear algorithms
+        if (!selectedProvider.isOptimalForRandomAccess() && !selectedAlgorithm.getName().equals("Linear Search")) {
+            System.out.println("\nPerformance Note: " + selectedAlgorithm.getName() + 
+                " on " + selectedProvider.getName() + " is inefficient due to O(n) random access time.");
+            System.out.println("Consider using ArrayList for better performance with " + selectedAlgorithm.getName() + ".");
+        }
+    }
+    
+    private int displayAlgorithmMenu() {
+        System.out.println("\nChoose search algorithm:");
+        System.out.println("1. Linear Search");
+        System.out.println("2. Binary Search");
+        System.out.println("3. Jump Search");
+        System.out.println("4. Exponential Search");
+        System.out.print("Enter choice (1-4 or 0 to cancel): ");
+        
+        try {
+            int choice = Integer.parseInt(scanner.nextLine().trim());
+            if (choice >= 1 && choice <= 4) return choice;
+        } catch (NumberFormatException ignored) {}
+        
+        System.out.println("Cancelled or invalid choice.");
+        return -1;
+    }
+    
+    private int displayDataStructureMenu() {
+        System.out.println("\nChoose data structure:");
+        System.out.println("1. ArrayList");
+        System.out.println("2. LinkedList");
+        System.out.print("Enter choice (1-2 or 0 to cancel): ");
+        
+        try {
+            int choice = Integer.parseInt(scanner.nextLine().trim());
+            if (choice == 1 || choice == 2) return choice;
+        } catch (NumberFormatException ignored) {}
+        
+        System.out.println("Cancelled or invalid choice.");
+        return -1;
+    }
+    
+    public void close() {
+        scanner.close();
+    }
+}
+
+// Main application class
+public class Main {
+    private static final int NUM_RUNS = 30;
+    private static final Random random = new Random();
+    
+    // Core components
+    private final UserInterface userInterface;
+    private final PerformanceAnalyzer performanceAnalyzer;
+    private final ChartGenerator chartGenerator;
+    
+    // Data and algorithm providers
+    private final List<DataStructureProvider<Article>> dataProviders;
+    private final List<SearchAlgorithm<Article>> algorithms;
+    
+    public Main() {
+        this.userInterface = new ConsoleUserInterface();
+        this.performanceAnalyzer = new ConcurrentPerformanceAnalyzer();
+        this.chartGenerator = new JFreeChartGenerator();
+        
+        this.dataProviders = new ArrayList<>();
+        this.algorithms = Arrays.asList(
+            new LinearSearchAdapter(),
+            new BinarySearchAdapter(),
+            new JumpSearchAdapter(),
+            new ExponentialSearchAdapter()
+        );
+    }
+    
+    public static void main(String[] args) {
+        Main app = new Main();
+        app.run();
+    }
+    
+    public void run() {
+        // Load data using existing CSVReader
+        List<Article> csvData = CSVReader.readCSV("src\\main\\resources\\Article.csv");
+        if (csvData.isEmpty()) {
+            System.out.println("No data found in CSV file or file not found.");
+            return;
+        }
+        
+        // Initialize data providers with sorted data for algorithms that require it
+        ArrayList<Article> arrayList = new ArrayList<>(csvData);
+        LinkedList<Article> linkedList = new LinkedList<>(csvData);
+        
+        // Sort both lists by ID for algorithms that require sorted data
+        arrayList.sort(Comparator.comparing(Article::getId));
+        linkedList.sort(Comparator.comparing(Article::getId));
+        
+        dataProviders.add(new ArrayListProvider<>(arrayList));
+        dataProviders.add(new LinkedListProvider<>(linkedList));
+        
+        System.out.println("Total articles loaded: " + arrayList.size());
+        
+        // Main application loop
+        while (true) {
+            userInterface.displayMainMenu();
+            int choice = userInterface.getMenuChoice();
+
+            switch (choice) {
+                case 1:
+                    userInterface.handleArticleSearch(dataProviders, algorithms);
+                    break;
+                case 2:
+                    runPerformanceRace();
+                    break;
+                case 3:
+                    System.out.println("Generating performance visualizations...");
+                    Map<String, AlgorithmStats> raceResults = runPerformanceRace();
+                    chartGenerator.generateAllCharts(raceResults, arrayList.size());
+                    break;
+                case 4:
+                    generateTheoreticalComplexityCharts();
+                    break;
+                case 5:
+                    runIntegerArrayRace();
+                    break;
+                case 6:
+                    System.out.println("Program ended.");
+                    if (userInterface instanceof ConsoleUserInterface) {
+                        ((ConsoleUserInterface) userInterface).close();
+                    }
+                    return;
+                default:
+                    System.out.println("Invalid choice. Try again.");
+            }
+        }
+    }
+    
+    private Map<String, AlgorithmStats> runPerformanceRace() {
+        List<String> testKeys = prepareTestKeys(dataProviders.get(0).getList(), NUM_RUNS);
+        Map<String, AlgorithmStats> results = performanceAnalyzer.runPerformanceTest(dataProviders, algorithms, testKeys);
+        performanceAnalyzer.analyzeResults(results);
+        return results;
+    }
+    
+    private void generateTheoreticalComplexityCharts() {
+        int[] sizes = {10, 50, 100, 500, 1000, 5000};
+        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+
+        System.out.println("Generating theoretical complexity comparison...");
+        
+        for (int n : sizes) {
+            dataset.addValue(n / 100.0, "Linear O(n)", String.valueOf(n));
+            dataset.addValue(Math.log(n) / Math.log(2), "Binary O(log n)", String.valueOf(n));
+            dataset.addValue(Math.sqrt(n), "Jump O(√n)", String.valueOf(n));
+            dataset.addValue(Math.log(n) / Math.log(2), "Exponential O(log n)", String.valueOf(n));
+        }
+
+        JFreeChart chart = ChartFactory.createLineChart(
+                "Theoretical Time Complexities",
+                "Input Size (n)",
+                "Operations (scaled for visualization)",
+                dataset
+        );
+        chartGenerator.showChart(chart, "Theoretical Complexities");
+    }
+    
+    private void runIntegerArrayRace() {
         int[] sizes = {1000, 5000, 10000, 20000, 50000};
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
         Random rand = new Random();
@@ -454,32 +654,28 @@ public class Main {
                 "Execution Time (milliseconds)",
                 dataset
         );
-        showChart(chart, "Integer Array Race Results");
+        chartGenerator.showChart(chart, "Integer Array Race Results");
     }
-
-    public static void part4_theory() {
-        int[] sizes = {10, 50, 100, 500, 1000, 5000};
-        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-
-        System.out.println("Generating theoretical complexity comparison...");
+    
+    // Helper method to prepare test keys (half existing, half non-existing)    
+    private List<String> prepareTestKeys(List<Article> articles, int numKeys) {
+        List<String> keys = new ArrayList<>();
+        int size = articles.size();
         
-        for (int n : sizes) {
-            dataset.addValue(n / 100.0, "Linear O(n)", String.valueOf(n));
-            dataset.addValue(Math.log(n) / Math.log(2), "Binary O(log n)", String.valueOf(n));
-            dataset.addValue(Math.sqrt(n), "Jump O(√n)", String.valueOf(n));
-            dataset.addValue(Math.log(n) / Math.log(2), "Exponential O(log n)", String.valueOf(n));
+        for (int i = 0; i < numKeys / 2; i++) {
+            int randomIndex = random.nextInt(size);
+            keys.add(articles.get(randomIndex).getId());
         }
-
-        JFreeChart chart = ChartFactory.createLineChart(
-                "Theoretical Time Complexities",
-                "Input Size (n)",
-                "Operations (scaled for visualization)",
-                dataset
-        );
-        showChart(chart, "Theoretical Complexities");
+        
+        for (int i = 0; i < numKeys / 2; i++) {
+            keys.add("NON_EXISTING_" + UUID.randomUUID().toString().substring(0, 8));
+        }
+        
+        Collections.shuffle(keys);
+        return keys;
     }
 
-    // Integer array search implementations for legacy support
+    // Integer array search implementations (legacy support)
     private static int linearSearchInt(int[] arr, int key) {
         for (int i = 0; i < arr.length; i++) {
             if (arr[i] == key) return i;
@@ -522,7 +718,6 @@ public class Main {
         while (i < arr.length && arr[i] <= key) {
             i *= 2;
         }
-        
         return binarySearchInRangeInt(arr, i / 2, Math.min(i, arr.length - 1), key);
     }
     
@@ -535,129 +730,41 @@ public class Main {
         }
         return -1;
     }
+}
 
-    // Method to run the standalone demonstrations (equivalent to old Graphs.main)
-    public static void runStandaloneGraphDemos() {
-        System.out.println("Running standalone graph demonstrations...");
-        System.out.println("=========================================");
-        
-        try {
-            // Demonstrate theoretical complexities
-            part4_theory();
-            Thread.sleep(2000);
-            
-            // Demonstrate integer array race
-            part2_race();
-            
-        } catch (InterruptedException e) {
-            System.err.println("Thread interrupted: " + e.getMessage());
-        }
-        
-        System.out.println("=========================================");
-        System.out.println("Demo complete! Close chart windows when done.");
-    }
-
-    // ========== UTILITY METHODS ==========
+// Statistics tracking class
+class AlgorithmStats {
+    private double bestTime = Double.MAX_VALUE;
+    private double worstTime = Double.MIN_VALUE;
+    private double totalTime = 0;
+    private int foundCount = 0;
+    private int totalRuns = 0;
     
-    private static List<String> prepareTestKeys(List<Article> articles, int numKeys) {
-        List<String> keys = new ArrayList<>();
-        int size = articles.size();
-        
-        for (int i = 0; i < numKeys / 2; i++) {
-            int randomIndex = random.nextInt(size);
-            keys.add(articles.get(randomIndex).getId());
-        }
-        
-        for (int i = 0; i < numKeys / 2; i++) {
-            keys.add("NON_EXISTING_" + UUID.randomUUID().toString().substring(0, 8));
-        }
-        
-        Collections.shuffle(keys);
-        return keys;
-    }
-
-    private static String getAlgorithmName(int choice) {
-        switch (choice) {
-            case 1: return "Linear Search";
-            case 2: return "Binary Search";
-            case 3: return "Jump Search";
-            case 4: return "Exponential Search";
-            default: return "Unknown";
-        }
-    }
-
-    private static int displayAlgorithmMenu(Scanner scanner) {
-        System.out.println("\nChoose search algorithm:");
-        System.out.println("1. Linear Search");
-        System.out.println("2. Binary Search");
-        System.out.println("3. Jump Search");
-        System.out.println("4. Exponential Search");
-        System.out.print("Enter choice (1-4 or 0 to cancel): ");
-        
-        try {
-            int choice = Integer.parseInt(scanner.nextLine().trim());
-            if (choice >= 1 && choice <= 4) return choice;
-        } catch (NumberFormatException ignored) {}
-        
-        System.out.println("Cancelled or invalid choice.");
-        return -1;
-    }
-
-    private static int displayDataStructureMenu(Scanner scanner) {
-        System.out.println("\nChoose data structure:");
-        System.out.println("1. ArrayList");
-        System.out.println("2. LinkedList");
-        System.out.print("Enter choice (1-2 or 0 to cancel): ");
-        
-        try {
-            int choice = Integer.parseInt(scanner.nextLine().trim());
-            if (choice == 1 || choice == 2) return choice;
-        } catch (NumberFormatException ignored) {}
-        
-        System.out.println("Cancelled or invalid choice.");
-        return -1;
+    public void addResult(double time, boolean found, int run) {
+        bestTime = Math.min(bestTime, time);
+        worstTime = Math.max(worstTime, time);
+        totalTime += time;
+        totalRuns++;
+        if (found) foundCount++;
     }
     
-    // ========== INNER CLASSES ==========
-    
-    public static class AlgorithmConfig {
-        String name;
-        SearchFunction searchFunction;
-        
-        AlgorithmConfig(String name, SearchFunction searchFunction) {
-            this.name = name;
-            this.searchFunction = searchFunction;
-        }
+    public double getBestTime() { 
+        return bestTime == Double.MAX_VALUE ? 0 : bestTime; 
     }
     
-    private interface SearchFunction {
-        int search(List<Article> list, String key);
+    public double getWorstTime() { 
+        return worstTime == Double.MIN_VALUE ? 0 : worstTime; 
     }
     
-    public static class AlgorithmStats {
-        private double bestTime = Double.MAX_VALUE;
-        private double worstTime = Double.MIN_VALUE;
-        private double totalTime = 0;
-        private int foundCount = 0;
-        private int totalRuns = 0;
-        
-        public void addResult(double time, boolean found, int run) {
-            bestTime = Math.min(bestTime, time);
-            worstTime = Math.max(worstTime, time);
-            totalTime += time;
-            totalRuns++;
-            if (found) foundCount++;
-        }
-        
-        public double getBestTime() { 
-            return bestTime; }
-        public double getWorstTime() { 
-            return worstTime; }
-        public double getMeanTime() { 
-            return totalRuns > 0 ? totalTime / totalRuns : 0; }
-        public int getFoundCount() { 
-            return foundCount; }
-        public int getTotalRuns() { 
-            return totalRuns; }
+    public double getMeanTime() { 
+        return totalRuns > 0 ? totalTime / totalRuns : 0; 
+    }
+    
+    public int getFoundCount() { 
+        return foundCount; 
+    }
+    
+    public int getTotalRuns() { 
+        return totalRuns; 
     }
 }
