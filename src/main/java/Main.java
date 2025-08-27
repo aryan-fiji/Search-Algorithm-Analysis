@@ -439,7 +439,7 @@ class ConsoleUserInterface implements UserInterface {
 }
 // Main class
 public class Main {
-    private static final String CSV_FILE_PATH = "src/main/resources/Article.csv";
+    private static final String CSV_FILE_NAME = "Article.csv"; //call the file with filename
     
     // Components
     private final UserInterface userInterface;
@@ -511,7 +511,7 @@ public class Main {
     }
     
     private List<Article> loadAndSortData() {
-        List<Article> csvData = CSVReader.readCSV(CSV_FILE_PATH);
+        List<Article> csvData = CSVReader.readCSV(CSV_FILE_NAME);
         if (!csvData.isEmpty()) {
             csvData.sort(Comparator.comparing(Article::getId));
         }
