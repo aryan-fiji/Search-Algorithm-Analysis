@@ -46,7 +46,6 @@ class LinearSearchAdapter implements SearchAlgorithm<Article> {
     public int search(List<Article> list, String key) {
         return SearchAlgorithms.linearSearch(list, key);
     }
-
     @Override
     public String getName() { return "Linear Search"; }
 
@@ -59,7 +58,6 @@ class BinarySearchAdapter implements SearchAlgorithm<Article> {
     public int search(List<Article> list, String key) {
         return SearchAlgorithms.binarySearch(list, key);
     }
-    
     @Override
     public String getName() { return "Binary Search"; }
     
@@ -72,7 +70,6 @@ class JumpSearchAdapter implements SearchAlgorithm<Article> {
     public int search(List<Article> list, String key) {
         return SearchAlgorithms.jumpSearch(list, key);
     }
-    
     @Override
     public String getName() { return "Jump Search"; }
     
@@ -85,7 +82,6 @@ class ExponentialSearchAdapter implements SearchAlgorithm<Article> {
     public int search(List<Article> list, String key) {
         return SearchAlgorithms.exponentialSearch(list, key);
     }
-    
     @Override
     public String getName() { return "Exponential Search"; }
     
@@ -96,14 +92,12 @@ class ExponentialSearchAdapter implements SearchAlgorithm<Article> {
 // Data structure provider implementations
 class ArrayListProvider<T> implements DataStructureProvider<T> {
     private final List<T> list;
-    
     public ArrayListProvider(List<T> sourceData) {
         this.list = new ArrayList<>(sourceData);
     }
-    
     @Override
     public List<T> getList() { return list; }
-    
+
     @Override
     public String getName() { return "ArrayList"; }
     
@@ -117,7 +111,6 @@ class LinkedListProvider<T> implements DataStructureProvider<T> {
     public LinkedListProvider(List<T> sourceData) {
         this.list = new LinkedList<>(sourceData);
     }
-    
     @Override
     public List<T> getList() { return list; }
     
@@ -167,7 +160,6 @@ class ConcurrentPerformanceAnalyzer implements PerformanceAnalyzer {
                         catch (Exception e) {
                             System.err.println("Error in " + statsKey + ": " + e.getMessage());
                         }
-                        
                         long endTime = System.nanoTime();
                         double timeTaken = (endTime - startTime) / 1_000_000.0; // milliseconds
                         statsMap.get(statsKey).addResult(timeTaken, found, currentRun);
@@ -292,7 +284,6 @@ class JFreeChartGenerator implements ChartGenerator {
                 dataset.addValue(linkedStats.getMeanTime(), "LinkedList", algo.replace(" Search", ""));
             }
         }
-
         JFreeChart chart = ChartFactory.createBarChart(
             "ArrayList vs LinkedList Performance Comparison",
             "Search Algorithm",
@@ -305,7 +296,6 @@ class JFreeChartGenerator implements ChartGenerator {
     private void generateComplexityAnalysisChart(Map<String, AlgorithmStats> performanceData, int dataSize) {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
         double scaleFactor = 0.001;
-        
         dataset.addValue(dataSize * scaleFactor, "Linear O(n) - Theoretical", "Linear");
         dataset.addValue(Math.log(dataSize) / Math.log(2) * scaleFactor * 10, "Binary O(log n) - Theoretical", "Binary");
         dataset.addValue(Math.sqrt(dataSize) * scaleFactor * 5, "Jump O(√n) - Theoretical", "Jump");
@@ -330,7 +320,6 @@ class JFreeChartGenerator implements ChartGenerator {
     
     private void generateAlgorithmByDataStructureChart(Map<String, AlgorithmStats> performanceData) {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-        
         performanceData.forEach((key, stats) -> {
             String[] parts = key.split(" - ");
             if (parts.length == 2) {
@@ -339,7 +328,6 @@ class JFreeChartGenerator implements ChartGenerator {
                 dataset.addValue(stats.getMeanTime(), dataStructure, algorithm.replace(" Search", ""));
             }
         });
-
         JFreeChart chart = ChartFactory.createLineChart(
             "Algorithm Performance by Data Structure",
             "Search Algorithm",
@@ -348,7 +336,6 @@ class JFreeChartGenerator implements ChartGenerator {
         );
         showChart(chart, "Algorithm Performance Trends");
     }
-    
     @Override
     public void showChart(JFreeChart chart, String title) {
         JFrame frame = new JFrame(title);
@@ -365,7 +352,6 @@ class JFreeChartGenerator implements ChartGenerator {
 class ConsoleUserInterface implements UserInterface {
     private static final String INVALID_CHOICE_MSG = "Cancelled or invalid choice.";
     private final Scanner scanner;
-    
     public ConsoleUserInterface() {
         this.scanner = new Scanner(System.in);
     }
@@ -447,18 +433,15 @@ class ConsoleUserInterface implements UserInterface {
             System.out.println("Consider using ArrayList for better performance with " + algorithm.getName() + ".");
         }
     }
-    
     public void close() {
         scanner.close();
     }
 }
-
-// Main application class
+// Main class
 public class Main {
-    private static final int NUM_RUNS = 30;
     private static final String CSV_FILE_PATH = "src/main/resources/Article.csv";
     
-    // Core components
+    // Components
     private final UserInterface userInterface;
     private final PerformanceAnalyzer performanceAnalyzer;
     private final ChartGenerator chartGenerator;
@@ -502,7 +485,6 @@ public class Main {
         while (true) {
             userInterface.displayMainMenu();
             int choice = userInterface.getMenuChoice();
-
             switch (choice) {
                 case 1:
                     userInterface.handleArticleSearch(dataProviders, algorithms);
@@ -537,10 +519,56 @@ public class Main {
     }
     
     private Map<String, AlgorithmStats> runPerformanceRace(List<Article> data) {
-        List<String> testKeys = prepareTestKeys(data, NUM_RUNS);
-        Map<String, AlgorithmStats> results = performanceAnalyzer.runPerformanceTest(dataProviders, algorithms, testKeys);
-        performanceAnalyzer.analyzeResults(results);
-        return results;
+        int numKeys = 30;
+        List<String> testKeys = prepareTestKeys(data, numKeys);
+
+        Map<String, AlgorithmStats> statsMap = new ConcurrentHashMap<>();
+        for (DataStructureProvider<Article> provider : dataProviders) {
+            for (SearchAlgorithm<Article> algorithm : algorithms) {
+                String key = algorithm.getName() + " - " + provider.getName();
+                statsMap.put(key, new AlgorithmStats());
+            }
+        }
+
+        System.out.println("\n--- MIDDLE COMPUTATION DETAILS ---");
+        for (int i = 0; i < testKeys.size(); i++) {
+            String searchKey = testKeys.get(i);
+            System.out.println("Random Element " + (i + 1) + ": " + searchKey);
+
+            boolean foundInAny = false;
+            for (SearchAlgorithm<Article> algorithm : algorithms) {
+                for (DataStructureProvider<Article> provider : dataProviders) {
+                    String statsKey = algorithm.getName() + " - " + provider.getName();
+                    long startTime = System.nanoTime();
+                    boolean found = false;
+                    int result = -1;
+                    try {
+                        result = algorithm.search(provider.getList(), searchKey);
+                        found = result != -1;
+                    } catch (Exception e) {
+                        System.err.println("Error in " + statsKey + ": " + e.getMessage());
+                    }
+                    long endTime = System.nanoTime();
+                    double timeTaken = (endTime - startTime) / 1_000_000.0; // ms
+                    statsMap.get(statsKey).addResult(timeTaken, found, i);
+                    
+                    if (found) foundInAny = true;
+                    System.out.printf("%-28s %-14s %-25s %-10s %-10.3f%n",
+                        algorithm.getName(),
+                        provider.getName(),
+                        searchKey,
+                        found ? "Yes" : "No",
+                        timeTaken
+                    );
+                }
+            }
+            if (!foundInAny) {
+                System.out.println("Value " + searchKey + " is not present in the CSV file");
+            }
+            System.out.println(); // Blank line between each key group
+        }
+        performanceAnalyzer.analyzeResults(statsMap);
+        return statsMap;
     }
     
     private void generateTheoreticalComplexityCharts() {
@@ -567,29 +595,38 @@ public class Main {
         List<String> keys = new ArrayList<>();
         Random random = new Random();
         int size = articles.size();
-        
+
         // Half existing keys
-        for (int i = 0; i < numKeys / 2; i++) {
+        Set<String> usedIds = new HashSet<>();
+        while (usedIds.size() < numKeys / 2) {
             int randomIndex = random.nextInt(size);
-            keys.add(articles.get(randomIndex).getId());
+            String id = articles.get(randomIndex).getId();
+            if (usedIds.add(id)) {
+                keys.add(id);
+            }
         }
-        
-        // Half non-existing keys
-        for (int i = 0; i < numKeys / 2; i++) {
-            keys.add("NON_EXISTING_" + random.nextInt(10000));
+
+        // Half non-existing keys (just random numbers as strings, not prefixed)
+        Set<String> existingIds = new HashSet<>();
+        for (Article a : articles) existingIds.add(a.getId());
+        int nonExistingCount = 0;
+        while (nonExistingCount < numKeys / 2) {
+            String candidate = String.valueOf(random.nextInt(1000000));
+            if (!existingIds.contains(candidate)) {
+                keys.add(candidate);
+                nonExistingCount++;
+            }
         }
-        
         Collections.shuffle(keys);
         return keys;
     }
-    
+
     private void closeResources() {
         if (userInterface instanceof ConsoleUserInterface) {
             ((ConsoleUserInterface) userInterface).close();
         }
     }
 }
-
 // Statistics tracking class
 class AlgorithmStats {
     private double bestTime = Double.MAX_VALUE;
@@ -605,23 +642,18 @@ class AlgorithmStats {
         totalRuns++;
         if (found) foundCount++;
     }
-    
     public double getBestTime() { 
         return bestTime == Double.MAX_VALUE ? 0 : bestTime; 
     }
-    
     public double getWorstTime() { 
         return worstTime == Double.MIN_VALUE ? 0 : worstTime; 
     }
-    
     public double getMeanTime() { 
         return totalRuns > 0 ? totalTime / totalRuns : 0; 
     }
-    
     public int getFoundCount() { 
         return foundCount; 
     }
-    
     public int getTotalRuns() { 
         return totalRuns; 
     }

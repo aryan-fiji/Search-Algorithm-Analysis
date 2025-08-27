@@ -132,11 +132,12 @@ public class Article implements Comparable<Article> {
         return "ID: " + id + 
                "\nTitle: " + title + 
                "\nAbstract:\n" + abstractText +
-               ", Physics: " + physics + 
-               ", Math: " + mathematics + 
-               ", Stats: " + statistics + 
-               ", QuantBio: " + quantitativeBiology + 
-               ", QuantFin: " + quantitativeFinance + "]";
+               "\nIndexes for Article (" + id + "):" +
+               "\nPhysics: " + physics + 
+               ", Mathematics: " + mathematics + 
+               ", Statistics: " + statistics + 
+               ", Quantitative Biology: " + quantitativeBiology + 
+               ", Quantitative Finance: " + quantitativeFinance;
     }
 
     // Checks if this article matches a given ID
