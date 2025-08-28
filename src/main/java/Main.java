@@ -24,7 +24,6 @@ import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.data.category.DefaultCategoryDataset;
-
 // Core interfaces
 interface SearchAlgorithm<T> {
     int search(List<T> list, String key);
@@ -144,7 +143,7 @@ class ConcurrentPerformanceAnalyzer implements PerformanceAnalyzer {
     @Override
     public Map<String, AlgorithmStats> runPerformanceTest(List<DataStructureProvider<Article>> dataProviders,
                                 List<SearchAlgorithm<Article>> algorithms, List<String> testKeys) {
-        System.out.println("\n=== SEARCH ALGORITHMS RACE(" + NUM_RUNS + " RUNS - ALL ALGORITHMS) ===");
+        System.out.println("\nSearch Algorithms Race(" + NUM_RUNS + " Runs - All 8 Algorithms) ===");
         Map<String, AlgorithmStats> statsMap = new ConcurrentHashMap<>();
         ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         List<Future<?>> futures = new ArrayList<>();
@@ -203,7 +202,7 @@ class ConcurrentPerformanceAnalyzer implements PerformanceAnalyzer {
     
     @Override
     public void analyzeResults(Map<String, AlgorithmStats> results) {
-        System.out.println("\n=== RACE RESULTS ===");
+        System.out.println("\nAlgorithm Race Performance Summary:");
         System.out.printf("%-30s %-10s %-10s %-10s %-8s %-8s%n", 
             "Algorithm", "Best(ms)", "Worst(ms)", "Mean(ms)", "Found", "Runs");
         System.out.println("=".repeat(80));
@@ -223,7 +222,7 @@ class ConcurrentPerformanceAnalyzer implements PerformanceAnalyzer {
     }
     
     private void analyzeDataStructurePerformance(Map<String, AlgorithmStats> statsMap) {
-        System.out.println("\n=== PERFORMANCE ANALYSIS ===");
+        System.out.println("\nAlgorithm Performance by Data Structure Analysis:");
         System.out.println("LinkedList Performance Analysis:");
         System.out.println("- Linear Search: Optimal for LinkedList (sequential access)");
         System.out.println("- Binary/Jump/Exponential Search: Poor performance due to O(n) random access");
@@ -268,7 +267,7 @@ class JFreeChartGenerator implements ChartGenerator {
         JFreeChart chart = ChartFactory.createBarChart(
             "Algorithm Race Results - Mean Execution Time",
             "Algorithm - Data Structure",
-            "Mean Time (milliseconds)",
+            "Mean Time (in milliseconds)",
             dataset
         );
         showChart(chart, "Race Results - Mean Performance");
@@ -383,10 +382,10 @@ class ConsoleUserInterface implements UserInterface {
     @Override
     public void displayMainMenu() {
         System.out.println("\nChoose an option:");
-        System.out.println("1. Search article using ID");
-        System.out.println("2. Race all search algorithms (30 runs)");
-        System.out.println("3. Generate performance visualization graphs");
-        System.out.println("4. Show theoretical complexity curves");
+        System.out.println("1. Search for an article using ID");
+        System.out.println("2. Race all search algorithms (30 runs - Random Values)");
+        System.out.println("3. Generate search algorithms performance visualization graphs");
+        System.out.println("4. Show theoretical complexities comparison graph");
         System.out.println("5. End program");
         System.out.print("Enter choice: ");
     }
@@ -403,7 +402,7 @@ class ConsoleUserInterface implements UserInterface {
     @Override
     public void handleArticleSearch(List<DataStructureProvider<Article>> dataProviders, 
                                   List<SearchAlgorithm<Article>> algorithms) {
-        System.out.print("Enter ID: ");
+        System.out.print("Enter Article ID: ");
         String id = scanner.nextLine().trim();
         
         int algorithmChoice = getChoice("Choose search algorithm:", 
@@ -495,20 +494,20 @@ public class Main {
     }
 
     public void run() {
-        System.out.println("=== SEARCH ALGORITHMS ASSIGNMENT ===");
-        System.out.println("Loading data from resources...");
+        System.out.println("--- CS214 Assignment 1 (S11230987 & S11230995) ---");
+        System.out.println("Loading data from CSV File...");
         
         // Load and initialize data
         List<Article> sortedData = loadAndSortData();
         if (sortedData.isEmpty()) {
-            System.out.println("❌ No data found. Please check Article.csv location.");
+            System.out.println("No data found. Please check Article.csv location.");
             return;
         }
 
         // Initialize data providers with shared sorted data
         dataProviders.add(new ArrayListProvider<>(sortedData));
         dataProviders.add(new LinkedListProvider<>(sortedData));
-        System.out.println("✅ Total articles loaded: " + sortedData.size());
+        System.out.println("Total articles loaded: " + sortedData.size());
 
         // Main application loop
         while (true) {
@@ -520,14 +519,14 @@ public class Main {
                     lastRaceResults = runPerformanceRace(sortedData);
                 }
                 case 3 -> {
-    System.out.println("Do you want to use the results from the last race (option 2)?");
-    System.out.print("Enter Y to use last results, N to run a new test: ");
+    System.out.println("Do you want to use the results from the last race (Option 2)?");
+    System.out.print("Enter 1 to use values from the previous search algorithm race or 2 to run a new test: ");
     
     // Get the scanner from the existing userInterface instead of creating a new one
     String input = ((ConsoleUserInterface) userInterface).getInput().trim().toUpperCase();
     
     Map<String, AlgorithmStats> raceResults;
-    if ("Y".equals(input) && lastRaceResults != null) {
+    if ("1".equals(input) && lastRaceResults != null) {
         raceResults = lastRaceResults;
     } else {
         raceResults = runPerformanceRace(sortedData);
@@ -537,7 +536,7 @@ public class Main {
 }
                 case 4 -> generateTheoreticalComplexityCharts();
                 case 5 -> {
-                    System.out.println("Program ended.");
+                    System.out.println("--- Program ended. ---");
                     closeResources();
                     return;
                 }
@@ -546,11 +545,7 @@ public class Main {
         }
     }
     
-    /**
-     * Loads CSV data with portable resource loading
-     * First tries to load from Maven resources (works in JAR)
-     * Falls back to file system if needed
-     */
+    //Loads CSV data with portable resource loading
     private List<Article> loadAndSortData() {
         List<Article> csvData = new ArrayList<>();
         
@@ -558,7 +553,7 @@ public class Main {
         try {
             InputStream inputStream = getClass().getClassLoader().getResourceAsStream("Article.csv");
             if (inputStream != null) {
-                System.out.println("📂 Loading CSV from resources...");
+                System.out.println("Loading CSV from resources...");
                 
                 // Create temporary file from resource
                 File tempFile = File.createTempFile("Article", ".csv");
@@ -576,18 +571,18 @@ public class Main {
                 // Use existing CSVReader with temp file
                 csvData = CSVReader.readCSV(tempFile.getAbsolutePath());
                 if (!csvData.isEmpty()) {
-                    System.out.println("✅ Successfully loaded " + csvData.size() + " articles from resources");
+                    System.out.println("Successfully loaded " + csvData.size() + " articles from resources");
                 }
             } else {
-                System.out.println("⚠️ Article.csv not found in resources, trying file system...");
+                System.out.println("Article.csv not found in resources, trying file system...");
             }
         } catch (IOException e) {
-            System.out.println("⚠️ Could not load from resources: " + e.getMessage());
+            System.out.println("Could not load from resources: " + e.getMessage());
         }
         
         // Method 2: Fallback to file system
         if (csvData.isEmpty()) {
-            System.out.println("📁 Trying file system locations...");
+            System.out.println("Trying file system locations...");
             String[] possiblePaths = {
                 "Article.csv",
                 "src/main/resources/Article.csv",
@@ -599,12 +594,11 @@ public class Main {
             for (String path : possiblePaths) {
                 File file = new File(path);
                 System.out.println("   Checking: " + file.getAbsolutePath() + 
-                                 " - " + (file.exists() ? "EXISTS" : "NOT FOUND"));
-                
+                                 " - " + (file.exists() ? "Exists" : "Not Found"));
                 if (file.exists() && file.canRead()) {
                     csvData = CSVReader.readCSV(path);
                     if (!csvData.isEmpty()) {
-                        System.out.println("✅ Successfully loaded from: " + path);
+                        System.out.println("Successfully loaded from: " + path);
                         break;
                     }
                 }
@@ -613,20 +607,19 @@ public class Main {
         
         // Method 3: Show debugging info if still not found
         if (csvData.isEmpty()) {
-            System.out.println("\n❌ ARTICLE.CSV NOT FOUND!");
+            System.out.println("\nCSV File not found!");
             printDebuggingInfo();
             return csvData;
         }
         
         // Sort the data
         csvData.sort(Comparator.comparing(Article::getId));
-        System.out.println("✅ Data sorted by ID for binary search compatibility");
-        
+        System.out.println("Data sorted by ID for binary search compatibility");
         return csvData;
     }
     
     private void printDebuggingInfo() {
-        System.out.println("\n=== DEBUGGING INFORMATION ===");
+        System.out.println("\n--- Debugging Information ---");
         System.out.println("Current working directory: " + System.getProperty("user.dir"));
         
         // Show where we're running from
@@ -647,7 +640,7 @@ public class Main {
             }
         }
         
-        System.out.println("\n=== SOLUTION ===");
+        System.out.println("\n--- Problem Fix Suggestions: ---");
         System.out.println("For Maven projects, put Article.csv in: src/main/resources/Article.csv");
         System.out.println("Then run: mvn clean package");
         System.out.println("Then run: java -jar target/search-algorithms-portable.jar");
@@ -665,11 +658,10 @@ public class Main {
             }
         }
 
-        System.out.println("\n--- MIDDLE COMPUTATION DETAILS ---");
+        System.out.println("\n--- Mid-Computation Information ---");
         for (int i = 0; i < testKeys.size(); i++) {
             String searchKey = testKeys.get(i);
             System.out.println("Random Element " + (i + 1) + ": " + searchKey);
-
             boolean foundInAny = false;
             for (SearchAlgorithm<Article> algorithm : algorithms) {
                 for (DataStructureProvider<Article> provider : dataProviders) {
