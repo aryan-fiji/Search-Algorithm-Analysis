@@ -1,9 +1,25 @@
-import java.util.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Scanner;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+
 import javax.swing.JFrame;
+
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -173,8 +189,12 @@ class ConcurrentPerformanceAnalyzer implements PerformanceAnalyzer {
             try {
                 future.get();
             } 
-            catch (Exception e) {
-                System.err.println("Error waiting for task: " + e.getMessage());
+            catch (InterruptedException e) {
+                System.err.println("Task interrupted: " + e.getMessage());
+                Thread.currentThread().interrupt();
+            }
+            catch (java.util.concurrent.ExecutionException e) {
+                System.err.println("Execution error: " + e.getMessage());
             }
         }
         executor.shutdown();
@@ -355,6 +375,10 @@ class ConsoleUserInterface implements UserInterface {
     public ConsoleUserInterface() {
         this.scanner = new Scanner(System.in);
     }
+
+    public String getInput() {
+        return scanner.nextLine();
+    }
     
     @Override
     public void displayMainMenu() {
@@ -433,23 +457,25 @@ class ConsoleUserInterface implements UserInterface {
             System.out.println("Consider using ArrayList for better performance with " + algorithm.getName() + ".");
         }
     }
-    public void close() {
+    public void close() { // Close scanner
         scanner.close();
     }
 }
+
 // Main class
 public class Main {
-    private static final String CSV_FILE_NAME = "src/main/resources/Article.csv"; // Use relative path
-    
     // Components
     private final UserInterface userInterface;
     private final PerformanceAnalyzer performanceAnalyzer;
     private final ChartGenerator chartGenerator;
-    
+
     // Data and algorithm providers
     private final List<DataStructureProvider<Article>> dataProviders;
     private final List<SearchAlgorithm<Article>> algorithms;
-    
+
+    // Store last race results
+    private Map<String, AlgorithmStats> lastRaceResults = null;
+
     public Main() {
         this.userInterface = new ConsoleUserInterface();
         this.performanceAnalyzer = new ConcurrentPerformanceAnalyzer();
@@ -462,60 +488,169 @@ public class Main {
             new ExponentialSearchAdapter()
         );
     }
-    
+
     public static void main(String[] args) {
         Main app = new Main();
         app.run();
     }
-    
+
     public void run() {
+        System.out.println("=== SEARCH ALGORITHMS ASSIGNMENT ===");
+        System.out.println("Loading data from resources...");
+        
         // Load and initialize data
         List<Article> sortedData = loadAndSortData();
         if (sortedData.isEmpty()) {
-            System.out.println("No data found in CSV file or file not found.");
+            System.out.println("❌ No data found. Please check Article.csv location.");
             return;
         }
-        
+
         // Initialize data providers with shared sorted data
         dataProviders.add(new ArrayListProvider<>(sortedData));
         dataProviders.add(new LinkedListProvider<>(sortedData));
-        System.out.println("Total articles loaded: " + sortedData.size());
-        
+        System.out.println("✅ Total articles loaded: " + sortedData.size());
+
         // Main application loop
         while (true) {
             userInterface.displayMainMenu();
             int choice = userInterface.getMenuChoice();
             switch (choice) {
-                case 1:
-                    userInterface.handleArticleSearch(dataProviders, algorithms);
-                    break;
-                case 2:
-                    runPerformanceRace(sortedData);
-                    break;
-                case 3:
-                    System.out.println("Generating performance visualizations...");
-                    Map<String, AlgorithmStats> raceResults = runPerformanceRace(sortedData);
-                    chartGenerator.generateAllCharts(raceResults, sortedData.size());
-                    break;
-                case 4:
-                    generateTheoreticalComplexityCharts();
-                    break;
-                case 5:
+                case 1 -> userInterface.handleArticleSearch(dataProviders, algorithms);
+                case 2 -> {
+                    lastRaceResults = runPerformanceRace(sortedData);
+                }
+                case 3 -> {
+    System.out.println("Do you want to use the results from the last race (option 2)?");
+    System.out.print("Enter Y to use last results, N to run a new test: ");
+    
+    // Get the scanner from the existing userInterface instead of creating a new one
+    String input = ((ConsoleUserInterface) userInterface).getInput().trim().toUpperCase();
+    
+    Map<String, AlgorithmStats> raceResults;
+    if ("Y".equals(input) && lastRaceResults != null) {
+        raceResults = lastRaceResults;
+    } else {
+        raceResults = runPerformanceRace(sortedData);
+        lastRaceResults = raceResults;
+    }
+    chartGenerator.generateAllCharts(raceResults, sortedData.size());
+}
+                case 4 -> generateTheoreticalComplexityCharts();
+                case 5 -> {
                     System.out.println("Program ended.");
                     closeResources();
                     return;
-                default:
-                    System.out.println("Invalid choice. Try again.");
+                }
+                default -> System.out.println("Invalid choice. Try again.");
             }
         }
     }
     
+    /**
+     * Loads CSV data with portable resource loading
+     * First tries to load from Maven resources (works in JAR)
+     * Falls back to file system if needed
+     */
     private List<Article> loadAndSortData() {
-        List<Article> csvData = CSVReader.readCSV(CSV_FILE_NAME);
-        if (!csvData.isEmpty()) {
-            csvData.sort(Comparator.comparing(Article::getId));
+        List<Article> csvData = new ArrayList<>();
+        
+        // Method 1: Try to load from Maven resources (portable)
+        try {
+            InputStream inputStream = getClass().getClassLoader().getResourceAsStream("Article.csv");
+            if (inputStream != null) {
+                System.out.println("📂 Loading CSV from resources...");
+                
+                // Create temporary file from resource
+                File tempFile = File.createTempFile("Article", ".csv");
+                tempFile.deleteOnExit();
+                
+                try (FileOutputStream out = new FileOutputStream(tempFile)) {
+                    byte[] buffer = new byte[1024];
+                    int bytesRead;
+                    while ((bytesRead = inputStream.read(buffer)) != -1) {
+                        out.write(buffer, 0, bytesRead);
+                    }
+                }
+                inputStream.close();
+                
+                // Use existing CSVReader with temp file
+                csvData = CSVReader.readCSV(tempFile.getAbsolutePath());
+                if (!csvData.isEmpty()) {
+                    System.out.println("✅ Successfully loaded " + csvData.size() + " articles from resources");
+                }
+            } else {
+                System.out.println("⚠️ Article.csv not found in resources, trying file system...");
+            }
+        } catch (IOException e) {
+            System.out.println("⚠️ Could not load from resources: " + e.getMessage());
         }
+        
+        // Method 2: Fallback to file system
+        if (csvData.isEmpty()) {
+            System.out.println("📁 Trying file system locations...");
+            String[] possiblePaths = {
+                "Article.csv",
+                "src/main/resources/Article.csv",
+                "target/classes/Article.csv",
+                "./Article.csv",
+                "data/Article.csv"
+            };
+            
+            for (String path : possiblePaths) {
+                File file = new File(path);
+                System.out.println("   Checking: " + file.getAbsolutePath() + 
+                                 " - " + (file.exists() ? "EXISTS" : "NOT FOUND"));
+                
+                if (file.exists() && file.canRead()) {
+                    csvData = CSVReader.readCSV(path);
+                    if (!csvData.isEmpty()) {
+                        System.out.println("✅ Successfully loaded from: " + path);
+                        break;
+                    }
+                }
+            }
+        }
+        
+        // Method 3: Show debugging info if still not found
+        if (csvData.isEmpty()) {
+            System.out.println("\n❌ ARTICLE.CSV NOT FOUND!");
+            printDebuggingInfo();
+            return csvData;
+        }
+        
+        // Sort the data
+        csvData.sort(Comparator.comparing(Article::getId));
+        System.out.println("✅ Data sorted by ID for binary search compatibility");
+        
         return csvData;
+    }
+    
+    private void printDebuggingInfo() {
+        System.out.println("\n=== DEBUGGING INFORMATION ===");
+        System.out.println("Current working directory: " + System.getProperty("user.dir"));
+        
+        // Show where we're running from
+        try {
+            String jarPath = getClass().getProtectionDomain().getCodeSource().getLocation().getPath();
+            System.out.println("Application running from: " + jarPath);
+        } catch (Exception e) {
+            System.out.println("Could not determine application location");
+        }
+        
+        // List current directory contents
+        System.out.println("\nFiles in current directory:");
+        File currentDir = new File(".");
+        File[] files = currentDir.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                System.out.println("  " + file.getName() + (file.isDirectory() ? " [DIR]" : ""));
+            }
+        }
+        
+        System.out.println("\n=== SOLUTION ===");
+        System.out.println("For Maven projects, put Article.csv in: src/main/resources/Article.csv");
+        System.out.println("Then run: mvn clean package");
+        System.out.println("Then run: java -jar target/search-algorithms-portable.jar");
     }
     
     private Map<String, AlgorithmStats> runPerformanceRace(List<Article> data) {
@@ -541,9 +676,9 @@ public class Main {
                     String statsKey = algorithm.getName() + " - " + provider.getName();
                     long startTime = System.nanoTime();
                     boolean found = false;
-                    int result = -1;
+                    
                     try {
-                        result = algorithm.search(provider.getList(), searchKey);
+                        int result = algorithm.search(provider.getList(), searchKey);
                         found = result != -1;
                     } catch (Exception e) {
                         System.err.println("Error in " + statsKey + ": " + e.getMessage());
@@ -622,12 +757,13 @@ public class Main {
     }
 
     private void closeResources() {
-        if (userInterface instanceof ConsoleUserInterface) {
-            ((ConsoleUserInterface) userInterface).close();
+        if (userInterface instanceof ConsoleUserInterface cui) {
+            cui.close();
         }
     }
 }
-// Statistics tracking class
+
+//hold statistics for each algorithm-data structure combination
 class AlgorithmStats {
     private double bestTime = Double.MAX_VALUE;
     private double worstTime = Double.MIN_VALUE;
