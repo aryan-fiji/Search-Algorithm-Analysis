@@ -439,7 +439,7 @@ class ConsoleUserInterface implements UserInterface {
 }
 // Main class
 public class Main {
-    private static final String CSV_FILE_NAME = "Article.csv"; //call the file with filename
+    private static final String CSV_FILE_NAME = "src/main/resources/Article.csv"; // Use relative path
     
     // Components
     private final UserInterface userInterface;

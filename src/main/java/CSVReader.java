@@ -6,8 +6,7 @@ public class CSVReader {
     
     //Reads CSV file and returns a list of Article objects
     public static List<Article> readCSV(String filename) {
-        String baseDir = "src/main/resources/";
-        String filePath = baseDir + filename;
+        String filePath = filename;
         List<Article> articles = new ArrayList<>();
         
         try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(filePath), StandardCharsets.UTF_8))) {
@@ -20,7 +19,7 @@ public class CSVReader {
             boolean inMultiLineRecord = false;
             int recordStartLine = 0;
             
-            System.out.println("Reading CSV file: " + filePath);
+            System.out.println("Reading CSV file: " + filename);
             
             while ((line = br.readLine()) != null) {
                 lineNumber++;
@@ -265,7 +264,7 @@ public class CSVReader {
             
             int lineCount = 0;
             long fileSize = new File(filePath).length();
-            
+
             while ((br.readLine()) != null) {
                 lineCount++;
             }
