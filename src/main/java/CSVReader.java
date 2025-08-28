@@ -1,6 +1,12 @@
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class CSVReader {
     
@@ -112,7 +118,7 @@ public class CSVReader {
         //Expected header fields from csv file
         List<String> fields = parseCSVFields(line);
         if (fields.size() < 9) {
-            throw new IllegalArgumentException("Insufficient fields. Expected: 9, Received: " + fields.size());
+            throw new IllegalArgumentException("Insufficient fields. Expected: 9, Received: " + fields.size() + " at line " + lineNumber);
         }
         try {
             String id = cleanField(fields.get(0));
@@ -251,7 +257,7 @@ public class CSVReader {
                 return false;
             }
             
-        } catch (IOException e) {
+        } catch (IOException | SecurityException e) {
             System.err.println("Error validating CSV format: " + e.getMessage());
             return false;
         }
@@ -275,7 +281,7 @@ public class CSVReader {
             System.out.println("Total lines: " + lineCount);
             System.out.println("Data rows (excluding header): " + (lineCount - 1));
 
-        } catch (IOException e) {
+        } catch (IOException | SecurityException e) {
             System.err.println("Error reading CSV statistics: " + e.getMessage());
         }
     }
